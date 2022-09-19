@@ -15,7 +15,7 @@ others will follow. Anyone can join or leave without disrupting the session.
 
 ## Implementation
 
-Rusty Link currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) except for the callbacks, since I havn't figured out a safe of implementing the context void\* pointer yet. Any help is appreciated.
+Rusty Link currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) except for the callbacks, since I haven't figured out a safe way of implementing the context void\* pointer yet. Any help is appreciated.
 
 ## Credits
 
