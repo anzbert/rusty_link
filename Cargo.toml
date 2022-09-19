@@ -1,0 +1,18 @@
+[package]
+name = "rusty_link"
+version = "0.1.0"
+authors = ["Andreas Mueller <anzbert@gmail.com>"]
+edition = "2021"
+description = "Plain Rust bindings for Ableton's Link C 11 Wrapper"
+readme = "README.md"
+license-file = "LICENSE.md"
+repository = "https://github.com/anzbert/ableton-link-rs"
+keywords = ["ableton", "link"]
+categories = ["api-bindings"]
+
+[dev-dependencies]
+ctrlc = "^3.2.3"
+
+[build-dependencies]
+cmake = "^0.1.48"
+bindgen = "^0.60.1"
