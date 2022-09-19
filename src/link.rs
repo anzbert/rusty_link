@@ -141,7 +141,9 @@ impl AblLink {
         unsafe { abl_link_commit_app_session_state(self.link, ss.session_state) }
     }
 
-    // CALLBACKS:
+    // TESTING CALLBACKS:
+
+    ////////////////////////////////////////////////////////////
 
     // pub fn set_num_peers_callback(&mut self, callback: abl_link_num_peers_callback) {
     //     unsafe {
@@ -151,6 +153,35 @@ impl AblLink {
     //         // Link_setNumPeersCallback(self.link, Some(cb));
     //     }
     // }
+
+    // FROM LINK_RS.RS
+    //
+    // pub type abl_link_num_peers_callback = Option<unsafe extern "C" fn(num_peers: u64, context: *mut ::std::os::raw::c_void)>;
+    //
+    // extern "C" {
+    //     pub fn abl_link_set_num_peers_callback(
+    //         link: abl_link,
+    //         callback: abl_link_num_peers_callback,
+    //         context: *mut ::std::os::raw::c_void,
+    //     );
+    // }
+
+    // FROM ABL_LINK.H
+    //
+    // typedef void (*abl_link_num_peers_callback)(uint64_t num_peers, void *context);
+    //
+    // void abl_link_set_num_peers_callback(abl_link link, abl_link_num_peers_callback callback, void *context);
+
+    // FROM ABL_LINK.CPP
+    //
+    // void abl_link_set_num_peers_callback(abl_link link, abl_link_num_peers_callback callback, void *context)
+    //   {
+    //     reinterpret_cast<ableton::Link *>(link.impl)->setNumPeersCallback(
+    //       [callback, context](
+    //         std::size_t numPeers) { (*callback)(static_cast<uint64_t>(numPeers), context); });
+    //   }
+
+    ////////////////////////////////////////////////////////
 
     // pub fn set_tempo_callback(&mut self, callback: extern "C" fn(f64)) {
     //     unsafe {
