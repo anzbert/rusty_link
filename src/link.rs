@@ -1,5 +1,7 @@
 use crate::rust_bindings::*;
 use crate::session_state::*;
+use std::fmt::Debug;
+use std::os::raw::*;
 
 ///  ### The representation of an abl_link instance
 ///
@@ -46,6 +48,12 @@ impl Drop for AblLink {
     fn drop(&mut self) {
         // println!("Dropping AblLink");
         unsafe { abl_link_destroy(self.link) }
+    }
+}
+
+impl Debug for AblLink {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AblLink").field("link", &self.link).finish()
     }
 }
 
@@ -141,19 +149,53 @@ impl AblLink {
         unsafe { abl_link_commit_app_session_state(self.link, ss.session_state) }
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // TESTING CALLBACKS:
 
-    ////////////////////////////////////////////////////////////
+    // C = User provided callback
+    // W = Wrapped type to pass to C-library
 
-    // pub fn set_num_peers_callback(&mut self, callback: abl_link_num_peers_callback) {
-    //     unsafe {
-    //         abl_link_set_num_peers_callback(self.link, callback, context);
-    //         todo!();
-    //         // let cb = callback as unsafe extern "C" fn(size_t);
-    //         // Link_setNumPeersCallback(self.link, Some(cb));
-    //     }
-    // }
+    pub fn set_num_peers_callback<C: FnMut(u64, *mut c_void)>(
+        &mut self,
+        callback: extern "C" fn(u64, *mut c_void),
+    ) {
+        // let fn_pointer = &callback as *const _ as *mut c_void;
 
+        let context = &self as *const _ as *mut c_void;
+
+        // // declare generic wrapper fn
+        // unsafe extern "C" fn closure_wrapper<W>(num_peers: u64, context: *mut c_void)
+        // where
+        //     W: FnMut(AblLink),
+        // {
+        //     let opt_closure = callback as *mut Option<W>;
+        //     unsafe {
+        //         let mut fnx = (*opt_closure).take().unwrap();
+        //         let ss = SessionState { wss };
+        //         fnx(ss);
+        //     }
+        // }
+
+        // extern "C" fn closure_wrapper<F>(num_peers: u64, link: *mut c_void)
+        // where
+        //     F: AblLink,
+        // {
+        //     let opt_closure = closure as *mut Option<F>;
+        //     unsafe {
+        //         let mut fnx = (*opt_closure).take().unwrap();
+        //         let ss = SessionState { wss };
+        //         fnx(ss);
+        //     }
+        // }
+
+        unsafe {
+            abl_link_set_num_peers_callback(self.link, Some(callback), context);
+            // let cb = callback as unsafe extern "C" fn(size_t);
+            // Link_setNumPeersCallback(self.link, Some(cb));
+        }
+    }
+
+    /////////////////////
     // FROM LINK_RS.RS
     //
     // pub type abl_link_num_peers_callback = Option<unsafe extern "C" fn(num_peers: u64, context: *mut ::std::os::raw::c_void)>;
@@ -166,12 +208,14 @@ impl AblLink {
     //     );
     // }
 
+    /////////////////////
     // FROM ABL_LINK.H
     //
     // typedef void (*abl_link_num_peers_callback)(uint64_t num_peers, void *context);
     //
     // void abl_link_set_num_peers_callback(abl_link link, abl_link_num_peers_callback callback, void *context);
 
+    ///////////////////////
     // FROM ABL_LINK.CPP
     //
     // void abl_link_set_num_peers_callback(abl_link link, abl_link_num_peers_callback callback, void *context)
@@ -181,7 +225,9 @@ impl AblLink {
     //         std::size_t numPeers) { (*callback)(static_cast<uint64_t>(numPeers), context); });
     //   }
 
-    ////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // implementation fragments from ableton-link-rs:
 
     // pub fn set_tempo_callback(&mut self, callback: extern "C" fn(f64)) {
     //     unsafe {
@@ -190,17 +236,28 @@ impl AblLink {
     //     }
     // }
 
-    // pub fn set_start_stop_callback(&mut self, callback: unsafe extern "C" fn(bool)) {
-    //     extern "C" fn cb(is_playing: bool, null: *mut std::os::raw::c_void) {
-    //         callback(is_playing);
-    //     }
+    pub fn set_start_stop_callback(&mut self, callback: extern "C" fn(bool, *mut c_void)) {
+        // let context = &self as *const _ as *mut c_void;
+        let to_c_ptr = self as *mut _ as *mut c_void;
 
-    //     // let test = fn(is_playing: bool, context: *mut ::std::os::raw::c_void);
-    //     unsafe {
-    //         // let cb = callback as unsafe extern "C" fn(bool);
-    //         // let cb1 = callback as unsafe extern "C" fn(bool, *mut std::os::raw::c_void);
-    //         // abl_link_start_stop_callback;
-    //         abl_link_set_start_stop_callback(self.link, Some(cb), 0 as *mut std::os::raw::c_void);
-    //     }
-    // }
+        unsafe {
+            abl_link_set_start_stop_callback(self.link, Some(callback), to_c_ptr);
+        }
+    }
+    pub fn set_test_callback(
+        &mut self,
+        callback: extern "C" fn(bool, *mut c_void),
+        test_struct: &mut TestStruct,
+    ) {
+        // let context = &self as *const _ as *mut c_void;
+        let to_c_ptr = test_struct as *mut _ as *mut c_void;
+
+        unsafe {
+            abl_link_set_start_stop_callback(self.link, Some(callback), to_c_ptr);
+        }
+    }
+}
+
+pub struct TestStruct {
+    pub number: usize,
 }

@@ -29,4 +29,5 @@ pub(crate) mod session_state;
 
 // PUBLIC API
 pub use link::AblLink;
+pub use link::TestStruct;
 pub use session_state::SessionState;

@@ -1,8 +1,25 @@
-use rusty_link::{AblLink, SessionState};
+use rusty_link::{AblLink, SessionState, TestStruct};
+use std::os::raw::c_void;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+
+extern "C" fn test(is_playing: bool, link_ptr: *mut c_void) {
+    let back_to_rust_ref = unsafe { &mut *(link_ptr as *mut AblLink) };
+    // let ptr = link_ptr as *mut Option<AblLink>;
+    println!("XXXXXXXX link: {:?}", back_to_rust_ref.clock_micros());
+
+    println!("YOYOYOYO play state: {}", is_playing);
+}
+
+extern "C" fn test2(is_playing: bool, link_ptr: *mut c_void) {
+    let back_to_rust_ref = unsafe { &mut *(link_ptr as *mut TestStruct) };
+    // let ptr = link_ptr as *mut Option<AblLink>;
+    println!("XXXXXXXX link: {:?}", back_to_rust_ref.number);
+
+    println!("YOYOYOYO play state: {}", is_playing);
+}
 
 fn main() {
     let running = Arc::new(AtomicBool::new(true));
@@ -18,6 +35,11 @@ fn main() {
 
     link.enable(true);
     link.enable_start_stop_sync(true);
+
+    link.set_start_stop_callback(test);
+
+    // let mut test_struct = TestStruct { number: 99 };
+    // link.set_test_callback(test2, &mut test_struct);
 
     while running.load(Ordering::SeqCst) {
         session_state.capture_app_session_state(&link);
