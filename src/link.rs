@@ -79,7 +79,7 @@ impl AblLink {
         unsafe { abl_link_enable(self.link, enable) }
     }
 
-    /// : Is start/stop synchronization enabled?
+    ///  Is start/stop synchronization enabled?
     ///
     ///  Thread-safe: yes
     ///
@@ -88,7 +88,7 @@ impl AblLink {
         unsafe { abl_link_is_start_stop_sync_enabled(self.link) }
     }
 
-    /// : Enable start/stop synchronization.
+    ///  Enable start/stop synchronization.
     ///
     ///  Thread-safe: yes
     ///
@@ -115,7 +115,7 @@ impl AblLink {
         unsafe { abl_link_clock_micros(self.link) }
     }
 
-    /// Commit the given Session State to the Link session from the audio thread.
+    ///  Commit the given Session State to the Link session from the audio thread.
     ///
     ///  Thread-safe: no
     ///
@@ -128,7 +128,7 @@ impl AblLink {
         unsafe { abl_link_commit_audio_session_state(self.link, ss.session_state) }
     }
 
-    /// Commit the given Session State to the Link session from an application thread.
+    ///  Commit the given Session State to the Link session from an application thread.
     ///
     ///  Thread-safe: yes
     ///
