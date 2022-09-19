@@ -1,7 +1,8 @@
 use crate::rust_bindings::*;
 use crate::session_state::*;
 
-/// ## The representation of an abl_link instance
+///  ### The representation of an abl_link instance
+///
 ///  Each abl_link instance has its own session state which
 ///  represents a beat timeline and a transport start/stop state. The
 ///  timeline starts running from beat 0 at the initial tempo when
@@ -49,31 +50,98 @@ impl Drop for AblLink {
 }
 
 impl AblLink {
+    ///  Construct a new abl_link instance with an initial tempo.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
     pub fn new(bpm: f64) -> AblLink {
         AblLink {
             link: unsafe { abl_link_create(bpm) },
         }
     }
 
+    ///  Is Link currently enabled?
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: yes
     pub fn is_enabled(&self) -> bool {
         unsafe { abl_link_is_enabled(self.link) }
     }
 
+    ///  Enable/disable Link.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
     pub fn enable(&mut self, enable: bool) {
         unsafe { abl_link_enable(self.link, enable) }
     }
 
+    /// : Is start/stop synchronization enabled?
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
     pub fn is_start_stop_sync_enabled(&self) -> bool {
         unsafe { abl_link_is_start_stop_sync_enabled(self.link) }
     }
 
+    /// : Enable start/stop synchronization.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
     pub fn enable_start_stop_sync(&mut self, enable: bool) {
         unsafe { abl_link_enable_start_stop_sync(self.link, enable) }
     }
 
+    ///  How many peers are currently connected in a Link session?
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: yes
     pub fn num_peers(&self) -> u64 {
         unsafe { abl_link_num_peers(self.link) }
     }
+
+    /// Get the current link clock time in microseconds.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: yes
+    pub fn clock_micros(&self) -> i64 {
+        unsafe { abl_link_clock_micros(self.link) }
+    }
+
+    /// Commit the given Session State to the Link session from the audio thread.
+    ///
+    ///  Thread-safe: no
+    ///
+    ///  Realtime-safe: yes
+    ///
+    ///  This function should ONLY be called in the audio thread. The given
+    ///  session_state will replace the current Link state. Modifications will be
+    ///  communicated to other peers in the session.
+    pub fn commit_audio_session_state(&mut self, ss: &SessionState) {
+        unsafe { abl_link_commit_audio_session_state(self.link, ss.session_state) }
+    }
+
+    /// Commit the given Session State to the Link session from an application thread.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    ///
+    ///  The given session_state will replace the current Link Session State.
+    ///  Modifications of the Session State will be communicated to other peers in the
+    ///  session.
+    pub fn commit_app_session_state(&mut self, ss: &SessionState) {
+        unsafe { abl_link_commit_app_session_state(self.link, ss.session_state) }
+    }
+
+    // CALLBACKS:
 
     // pub fn set_num_peers_callback(&mut self, callback: abl_link_num_peers_callback) {
     //     unsafe {
@@ -104,16 +172,4 @@ impl AblLink {
     //         abl_link_set_start_stop_callback(self.link, Some(cb), 0 as *mut std::os::raw::c_void);
     //     }
     // }
-
-    pub fn clock_micros(&self) -> i64 {
-        unsafe { abl_link_clock_micros(self.link) }
-    }
-
-    pub fn commit_audio_session_state(&mut self, ss: &SessionState) {
-        unsafe { abl_link_commit_audio_session_state(self.link, ss.session_state) }
-    }
-
-    pub fn commit_app_session_state(&mut self, ss: &SessionState) {
-        unsafe { abl_link_commit_app_session_state(self.link, ss.session_state) }
-    }
 }
