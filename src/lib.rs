@@ -14,7 +14,7 @@
 //! providing Rust's safety guarantees.
 //!
 //! Thanks to Magnus Herold for [his implementation](https://github.com/magdaddy/ableton-link-rs).
-//! This library is a fork of his and is purely built on Ableton's C Wrapper, instead
+//! This library started as a fork of his, but is now purely built on Ableton's C Wrapper, instead
 //! of a custom made one.
 
 // PRIVATE
@@ -28,5 +28,5 @@ pub(crate) mod link;
 pub(crate) mod session_state;
 
 // PUBLIC API
-pub use link::Link;
+pub use link::AblLink;
 pub use session_state::SessionState;

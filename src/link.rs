@@ -34,23 +34,23 @@ use crate::session_state::*;
 ///  state from both the audio thread and an application thread
 ///  concurrently is not advised and will potentially lead to unexpected
 ///  behavior.
-pub struct Link {
+pub struct AblLink {
     pub(crate) link: abl_link,
 }
 
-unsafe impl Send for Link {}
-unsafe impl Sync for Link {}
+unsafe impl Send for AblLink {}
+unsafe impl Sync for AblLink {}
 
-impl Drop for Link {
+impl Drop for AblLink {
     fn drop(&mut self) {
-        // println!("Dropping Link");
+        // println!("Dropping AblLink");
         unsafe { abl_link_destroy(self.link) }
     }
 }
 
-impl Link {
-    pub fn new(bpm: f64) -> Link {
-        Link {
+impl AblLink {
+    pub fn new(bpm: f64) -> AblLink {
+        AblLink {
             link: unsafe { abl_link_create(bpm) },
         }
     }

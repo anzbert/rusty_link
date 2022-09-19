@@ -27,6 +27,22 @@ use crate::rust_bindings::*;
 //     New,
 // }
 
+/// @brief The representation of the current local state of a client in a Link Session
+///
+///  @discussion A session state represents a timeline and the start/stop
+///  state. The timeline is a representation of a mapping between time and
+///  beats for varying quanta. The start/stop state represents the user
+///  intention to start or stop transport at a specific time. Start stop
+///  synchronization is an optional feature that allows to share the user
+///  request to start or stop transport between a subgroup of peers in a
+///  Link session. When observing a change of start/stop state, audio
+///  playback of a peer should be started or stopped the same way it would
+///  have happened if the user had requested that change at the according
+///  time locally. The start/stop state can only be changed by the user.
+///  This means that the current local start/stop state persists when
+///  joining or leaving a Link session. After joining a Link session
+///  start/stop change requests will be communicated to all connected peers.
+///
 pub struct SessionState {
     pub(crate) session_state: abl_link_session_state,
     // state_type: State,
@@ -53,12 +69,12 @@ impl SessionState {
     //     self.state_type
     // }
 
-    pub fn capture_app_session_state(&mut self, link: &Link) {
+    pub fn capture_app_session_state(&mut self, link: &AblLink) {
         // self.state_type = State::App;
         unsafe { abl_link_capture_app_session_state(link.link, self.session_state) }
     }
 
-    pub fn capture_audio_session_state(&mut self, link: &Link) {
+    pub fn capture_audio_session_state(&mut self, link: &AblLink) {
         // self.state_type = State::Audio;
         unsafe { abl_link_capture_audio_session_state(link.link, self.session_state) }
     }

@@ -1,4 +1,4 @@
-use rusty_link::{Link, SessionState};
+use rusty_link::{AblLink, SessionState};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
@@ -13,7 +13,7 @@ fn main() {
     .expect("Error setting Ctrl-C handler");
 
     let quantum = 4.0;
-    let mut link = Link::new(120.0);
+    let mut link = AblLink::new(120.0);
     let mut session_state = SessionState::new();
 
     link.enable(true);

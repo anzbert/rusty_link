@@ -14,5 +14,5 @@ copying the functionality of abl_link, while hiding any unsafe behaviour and
 providing Rust's safety guarantees.
 
 Thanks to Magnus Herold for [his implementation](https://github.com/magdaddy/ableton-link-rs).
-This library is a fork of his and is purely built on Ableton's C Wrapper, instead
+This library started as a fork of his, but is now purely built on Ableton's C Wrapper, instead
 of a custom made one.
