@@ -34,6 +34,8 @@ fn main() {
     let bindings = bindgen::builder()
         .header("link/extensions/abl_link/include/abl_link.h")
         .allowlist_function("abl_link_.*")
+        // .blocklist_function("abl_link_set_.*callback.*")
+        // .blocklist_type("abl_link_.*callback.*")
         .generate()
         .expect("Failed to generate bindings");
 

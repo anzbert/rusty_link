@@ -141,35 +141,46 @@ impl AblLink {
         unsafe { abl_link_commit_app_session_state(self.link, ss.session_state) }
     }
 
-    // CALLBACKS:
+    ///  Register a callback to be notified when the number of
+    ///  peers in the Link session changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    ///
+    ///  The callback is invoked on a Link-managed thread.
+    pub fn set_num_peers_callback<C: FnMut(u64)>(&mut self, closure: &mut C) {
+        unsafe {
+            let (state, callback) = ffi_helpers::split_closure(closure);
+            abl_link_set_num_peers_callback(self.link, Some(callback), state);
+        }
+    }
 
-    // pub fn set_num_peers_callback(&mut self, callback: abl_link_num_peers_callback) {
-    //     unsafe {
-    //         abl_link_set_num_peers_callback(self.link, callback, context);
-    //         todo!();
-    //         // let cb = callback as unsafe extern "C" fn(size_t);
-    //         // Link_setNumPeersCallback(self.link, Some(cb));
-    //     }
-    // }
+    ///  Register a callback to be notified when the session tempo changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    ///
+    ///  The callback is invoked on a Link-managed thread.
+    pub fn set_tempo_callback<C: FnMut(f64)>(&mut self, closure: &mut C) {
+        unsafe {
+            let (state, callback) = ffi_helpers::split_closure(closure);
+            abl_link_set_tempo_callback(self.link, Some(callback), state);
+        }
+    }
 
-    // pub fn set_tempo_callback(&mut self, callback: extern "C" fn(f64)) {
-    //     unsafe {
-    //         let cb = callback as unsafe extern "C" fn(f64);
-    //         Link_setTempoCallback(self.link, Some(cb));
-    //     }
-    // }
-
-    // pub fn set_start_stop_callback(&mut self, callback: unsafe extern "C" fn(bool)) {
-    //     extern "C" fn cb(is_playing: bool, null: *mut std::os::raw::c_void) {
-    //         callback(is_playing);
-    //     }
-
-    //     // let test = fn(is_playing: bool, context: *mut ::std::os::raw::c_void);
-    //     unsafe {
-    //         // let cb = callback as unsafe extern "C" fn(bool);
-    //         // let cb1 = callback as unsafe extern "C" fn(bool, *mut std::os::raw::c_void);
-    //         // abl_link_start_stop_callback;
-    //         abl_link_set_start_stop_callback(self.link, Some(cb), 0 as *mut std::os::raw::c_void);
-    //     }
-    // }
+    ///  Register a callback to be notified when the state of start/stop isPlaying changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    ///
+    ///  The callback is invoked on a Link-managed thread.
+    pub fn set_start_stop_callback<C: FnMut(bool)>(&mut self, closure: &mut C) {
+        unsafe {
+            let (state, callback) = ffi_helpers::split_closure(closure);
+            abl_link_set_start_stop_callback(self.link, Some(callback), state);
+        }
+    }
 }
