@@ -1,27 +1,11 @@
-use rusty_link::{AblLink, SessionState, TestStruct};
-use std::os::raw::c_void;
+use rusty_link::{AblLink, SessionState};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-extern "C" fn test(is_playing: bool, link_ptr: *mut c_void) {
-    let back_to_rust_ref = unsafe { &mut *(link_ptr as *mut AblLink) };
-    // let ptr = link_ptr as *mut Option<AblLink>;
-    println!("XXXXXXXX link: {:?}", back_to_rust_ref.clock_micros());
-
-    println!("YOYOYOYO play state: {}", is_playing);
-}
-
-extern "C" fn test2(is_playing: bool, link_ptr: *mut c_void) {
-    let back_to_rust_ref = unsafe { &mut *(link_ptr as *mut TestStruct) };
-    // let ptr = link_ptr as *mut Option<AblLink>;
-    println!("XXXXXXXX link: {:?}", back_to_rust_ref.number);
-
-    println!("YOYOYOYO play state: {}", is_playing);
-}
-
 fn main() {
+    // Setup Ctrl-C Handler:
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
     ctrlc::set_handler(move || {
@@ -29,19 +13,19 @@ fn main() {
     })
     .expect("Error setting Ctrl-C handler");
 
+    // Setup Link:
     let quantum = 4.0;
     let mut link = AblLink::new(120.0);
-    let mut session_state = SessionState::new();
-
     link.enable(true);
     link.enable_start_stop_sync(true);
 
-    link.set_start_stop_callback(test);
+    // Callback Example:
+    let mut closure = |value: bool| println!("is_playing: {} with quantum: {}", value, quantum);
+    link.set_start_stop_callback(&mut closure);
 
-    // let mut test_struct = TestStruct { number: 99 };
-    // link.set_test_callback(test2, &mut test_struct);
-
+    // Main Loop wrapped in Ctrl-C Handler:
     while running.load(Ordering::SeqCst) {
+        let mut session_state = SessionState::new();
         session_state.capture_app_session_state(&link);
 
         let time = link.clock_micros();
@@ -55,6 +39,7 @@ fn main() {
         thread::sleep(Duration::from_millis(100));
     }
 
+    // Exit Routine:
     println!("Leaving Link session");
     link.enable(false);
 }

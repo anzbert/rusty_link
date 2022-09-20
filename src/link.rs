@@ -1,7 +1,5 @@
 use crate::rust_bindings::*;
 use crate::session_state::*;
-use std::fmt::Debug;
-use std::os::raw::*;
 
 ///  ### The representation of an abl_link instance
 ///
@@ -48,12 +46,6 @@ impl Drop for AblLink {
     fn drop(&mut self) {
         // println!("Dropping AblLink");
         unsafe { abl_link_destroy(self.link) }
-    }
-}
-
-impl Debug for AblLink {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("AblLink").field("link", &self.link).finish()
     }
 }
 
@@ -149,115 +141,46 @@ impl AblLink {
         unsafe { abl_link_commit_app_session_state(self.link, ss.session_state) }
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // TESTING CALLBACKS:
-
-    // C = User provided callback
-    // W = Wrapped type to pass to C-library
-
-    pub fn set_num_peers_callback<C: FnMut(u64, *mut c_void)>(
-        &mut self,
-        callback: extern "C" fn(u64, *mut c_void),
-    ) {
-        // let fn_pointer = &callback as *const _ as *mut c_void;
-
-        let context = &self as *const _ as *mut c_void;
-
-        // // declare generic wrapper fn
-        // unsafe extern "C" fn closure_wrapper<W>(num_peers: u64, context: *mut c_void)
-        // where
-        //     W: FnMut(AblLink),
-        // {
-        //     let opt_closure = callback as *mut Option<W>;
-        //     unsafe {
-        //         let mut fnx = (*opt_closure).take().unwrap();
-        //         let ss = SessionState { wss };
-        //         fnx(ss);
-        //     }
-        // }
-
-        // extern "C" fn closure_wrapper<F>(num_peers: u64, link: *mut c_void)
-        // where
-        //     F: AblLink,
-        // {
-        //     let opt_closure = closure as *mut Option<F>;
-        //     unsafe {
-        //         let mut fnx = (*opt_closure).take().unwrap();
-        //         let ss = SessionState { wss };
-        //         fnx(ss);
-        //     }
-        // }
-
+    ///  Register a callback to be notified when the number of
+    ///  peers in the Link session changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    ///
+    ///  The callback is invoked on a Link-managed thread.
+    pub fn set_num_peers_callback<C: FnMut(u64)>(&mut self, closure: &mut C) {
         unsafe {
-            abl_link_set_num_peers_callback(self.link, Some(callback), context);
-            // let cb = callback as unsafe extern "C" fn(size_t);
-            // Link_setNumPeersCallback(self.link, Some(cb));
+            let (state, callback) = ffi_helpers::split_closure(closure);
+            abl_link_set_num_peers_callback(self.link, Some(callback), state);
         }
     }
 
-    /////////////////////
-    // FROM LINK_RS.RS
-    //
-    // pub type abl_link_num_peers_callback = Option<unsafe extern "C" fn(num_peers: u64, context: *mut ::std::os::raw::c_void)>;
-    //
-    // extern "C" {
-    //     pub fn abl_link_set_num_peers_callback(
-    //         link: abl_link,
-    //         callback: abl_link_num_peers_callback,
-    //         context: *mut ::std::os::raw::c_void,
-    //     );
-    // }
-
-    /////////////////////
-    // FROM ABL_LINK.H
-    //
-    // typedef void (*abl_link_num_peers_callback)(uint64_t num_peers, void *context);
-    //
-    // void abl_link_set_num_peers_callback(abl_link link, abl_link_num_peers_callback callback, void *context);
-
-    ///////////////////////
-    // FROM ABL_LINK.CPP
-    //
-    // void abl_link_set_num_peers_callback(abl_link link, abl_link_num_peers_callback callback, void *context)
-    //   {
-    //     reinterpret_cast<ableton::Link *>(link.impl)->setNumPeersCallback(
-    //       [callback, context](
-    //         std::size_t numPeers) { (*callback)(static_cast<uint64_t>(numPeers), context); });
-    //   }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // implementation fragments from ableton-link-rs:
-
-    // pub fn set_tempo_callback(&mut self, callback: extern "C" fn(f64)) {
-    //     unsafe {
-    //         let cb = callback as unsafe extern "C" fn(f64);
-    //         Link_setTempoCallback(self.link, Some(cb));
-    //     }
-    // }
-
-    pub fn set_start_stop_callback(&mut self, callback: extern "C" fn(bool, *mut c_void)) {
-        // let context = &self as *const _ as *mut c_void;
-        let to_c_ptr = self as *mut _ as *mut c_void;
-
+    ///  Register a callback to be notified when the session tempo changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    ///
+    ///  The callback is invoked on a Link-managed thread.
+    pub fn set_tempo_callback<C: FnMut(f64)>(&mut self, closure: &mut C) {
         unsafe {
-            abl_link_set_start_stop_callback(self.link, Some(callback), to_c_ptr);
+            let (state, callback) = ffi_helpers::split_closure(closure);
+            abl_link_set_tempo_callback(self.link, Some(callback), state);
         }
     }
-    pub fn set_test_callback(
-        &mut self,
-        callback: extern "C" fn(bool, *mut c_void),
-        test_struct: &mut TestStruct,
-    ) {
-        // let context = &self as *const _ as *mut c_void;
-        let to_c_ptr = test_struct as *mut _ as *mut c_void;
 
+    ///  Register a callback to be notified when the state of start/stop isPlaying changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    ///
+    ///  The callback is invoked on a Link-managed thread.
+    pub fn set_start_stop_callback<C: FnMut(bool)>(&mut self, closure: &mut C) {
         unsafe {
-            abl_link_set_start_stop_callback(self.link, Some(callback), to_c_ptr);
+            let (state, callback) = ffi_helpers::split_closure(closure);
+            abl_link_set_start_stop_callback(self.link, Some(callback), state);
         }
     }
-}
-
-pub struct TestStruct {
-    pub number: usize,
 }
