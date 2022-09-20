@@ -44,7 +44,6 @@ use crate::rust_bindings::*;
 ///  start/stop change requests will be communicated to all connected peers.
 pub struct SessionState {
     pub(crate) session_state: abl_link_session_state,
-    // state_type: State,
 }
 
 impl Drop for SessionState {
@@ -68,14 +67,9 @@ impl SessionState {
         unsafe {
             SessionState {
                 session_state: abl_link_create_session_state(),
-                // state_type: State::New,
             }
         }
     }
-
-    // pub fn state_type(&self) -> State {
-    //     self.state_type
-    // }
 
     ///  Capture the current Link Session State from the audio thread.
     ///
@@ -87,9 +81,7 @@ impl SessionState {
     ///  accessed from any other threads. After capturing the session_state holds a snapshot
     ///  of the current Link Session State, so it should be used in a local scope. The
     ///  session_state should not be created on the audio thread.
-    ///
     pub fn capture_audio_session_state(&mut self, link: &AblLink) {
-        // self.state_type = State::Audio;
         unsafe { abl_link_capture_audio_session_state(link.link, self.session_state) }
     }
 
@@ -104,7 +96,6 @@ impl SessionState {
     ///  contains a snapshot of the current Link state, so it should be used in a local
     ///  scope.
     pub fn capture_app_session_state(&mut self, link: &AblLink) {
-        // self.state_type = State::App;
         unsafe { abl_link_capture_app_session_state(link.link, self.session_state) }
     }
 
