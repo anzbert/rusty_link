@@ -3,10 +3,10 @@ name = "rusty_link"
 version = "0.1.0"
 authors = ["Andreas Mueller <anzbert@gmail.com>"]
 edition = "2021"
-description = "Plain Rust bindings for Ableton's Link C 11 Wrapper"
+description = "Plain Rust bindings for Ableton Link's C 11 Wrapper"
+repository = "https://github.com/anzbert/rusty_link"
 readme = "README.md"
 license-file = "LICENSE.md"
-repository = "https://github.com/anzbert/ableton-link-rs"
 keywords = ["ableton", "link"]
 categories = ["api-bindings"]
 
@@ -14,12 +14,12 @@ categories = ["api-bindings"]
 [dependencies]
 # ffi_helpers = "^0.3.0"
 
-# for now using a fork which reverses the order of
-# ffi_helpers::split_closure()'s closure return type to trailing user_data
+# For now, using a fork which reverses the order of
+# ffi_helpers::split_closure()'s 'closure' return type to trailing user_data
 ffi_helpers = { git = "https://github.com/anzbert/ffi_helpers" }
 
 [dev-dependencies]
-ctrlc = "^3.2.3" # for link-hut example
+ctrlc = "^3.2.3" # for link_hut example
 
 [build-dependencies]
 cmake = "^0.1.48"
