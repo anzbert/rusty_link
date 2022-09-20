@@ -1,12 +1,9 @@
 use rusty_link::{AblLink, SessionState};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
 
 fn main() {
     // Setup Ctrl-C Handler:
-    let running = Arc::new(AtomicBool::new(true));
+    let running = std::sync::Arc::new(AtomicBool::new(true));
     let r = running.clone();
     ctrlc::set_handler(move || {
         r.store(false, Ordering::SeqCst);
@@ -36,7 +33,7 @@ fn main() {
             "playing={}, quantum={}, clock={}, tempo={}, beat={}",
             playing, quantum, time, tempo, beat
         );
-        thread::sleep(Duration::from_millis(100));
+        std::thread::sleep(std::time::Duration::from_millis(100));
     }
 
     // Exit Routine:
