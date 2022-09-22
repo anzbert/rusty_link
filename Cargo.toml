@@ -12,11 +12,10 @@ categories = ["api-bindings"]
 
 
 [dependencies]
+# Until PR to ffi_helpers has been accepted, this crate is using a fork
+# which adds fn split_closure_trailing_data() and corresponding trait.
+ffi_helpers = { path = "./ffi_helpers" }
 # ffi_helpers = "^0.3.0"
-
-# For now, using a fork which reverses the order of
-# ffi_helpers::split_closure()'s 'closure' return type to trailing user_data
-ffi_helpers = { git = "https://github.com/anzbert/ffi_helpers" }
 
 [dev-dependencies]
 ctrlc = "^3.2.3" # for link_hut example
