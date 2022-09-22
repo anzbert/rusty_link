@@ -7,7 +7,7 @@ fn main() {
     // ---------
     let out_dir = cmake::Config::new("cmake")
         // .cxxflag("-fno-rtti")
-        .build_target("lib_link_c")
+        .build_target("lib_abl_link_c")
         .build();
 
     // WINDOWS: Visual Studio output to OUT_DIR/{Debug, Release, RelWithDebInfo} etc.
@@ -21,7 +21,7 @@ fn main() {
     let build_dir = out_dir.join("build");
 
     println!("cargo:rustc-link-search=native={}", build_dir.display());
-    println!("cargo:rustc-link-lib=static=lib_link_c");
+    println!("cargo:rustc-link-lib=static=lib_abl_link_c");
 
     // MACOS: Apparently important! Otherwise linker errors, apparently only on macOS
     #[cfg(target_os = "macos")]

@@ -31,9 +31,9 @@ pub(crate) mod rust_bindings {
     include!(concat!(env!("OUT_DIR"), "/link_rs.rs"));
 }
 
-pub(crate) mod link;
+pub(crate) mod abl_link;
 pub(crate) mod session_state;
 
 // PUBLIC API
-pub use link::AblLink;
+pub use abl_link::AblLink;
 pub use session_state::SessionState;
