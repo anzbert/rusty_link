@@ -156,7 +156,7 @@ impl AblLink {
     ///  The callback is invoked on a Link-managed thread.
     pub fn set_num_peers_callback<C: FnMut(u64)>(&mut self, closure: &mut C) {
         unsafe {
-            let (state, callback) = ffi_helpers_fork::split_closure_trailing_data(closure);
+            let (state, callback) = ffi_helpers::split_closure_trailing_data(closure);
             abl_link_set_num_peers_callback(self.link, Some(callback), state);
         }
     }
@@ -174,7 +174,7 @@ impl AblLink {
     ///  The callback is invoked on a Link-managed thread.
     pub fn set_tempo_callback<C: FnMut(f64)>(&mut self, closure: &mut C) {
         unsafe {
-            let (state, callback) = ffi_helpers_fork::split_closure_trailing_data(closure);
+            let (state, callback) = ffi_helpers::split_closure_trailing_data(closure);
             abl_link_set_tempo_callback(self.link, Some(callback), state);
         }
     }
@@ -192,7 +192,7 @@ impl AblLink {
     ///  The callback is invoked on a Link-managed thread.
     pub fn set_start_stop_callback<C: FnMut(bool)>(&mut self, closure: &mut C) {
         unsafe {
-            let (state, callback) = ffi_helpers_fork::split_closure_trailing_data(closure);
+            let (state, callback) = ffi_helpers::split_closure_trailing_data(closure);
             abl_link_set_start_stop_callback(self.link, Some(callback), state);
         }
     }

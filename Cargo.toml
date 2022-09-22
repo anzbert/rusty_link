@@ -14,7 +14,7 @@ categories = ["api-bindings"]
 [dependencies]
 # Until PR to ffi_helpers has been accepted, this crate is using a fork
 # which adds fn split_closure_trailing_data() and corresponding trait.
-ffi_helpers_fork = { path = "./ffi_helpers_fork", version = "0.3.1" }
+ffi_helpers = { git = "https://github.com/anzbert/ffi_helpers", version = "0.3.0" }
 # ffi_helpers = "^0.3.0"
 
 [dev-dependencies]
