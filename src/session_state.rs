@@ -71,34 +71,6 @@ impl SessionState {
         }
     }
 
-    ///  Capture the current Link Session State from the audio thread.
-    ///
-    ///  Thread-safe: no
-    ///
-    ///  Realtime-safe: yes
-    ///
-    ///  This function should ONLY be called in the audio thread and must not be
-    ///  accessed from any other threads. After capturing the session_state holds a snapshot
-    ///  of the current Link Session State, so it should be used in a local scope. The
-    ///  session_state should not be created on the audio thread.
-    pub fn capture_audio_session_state(&mut self, link: &AblLink) {
-        unsafe { abl_link_capture_audio_session_state(link.link, self.session_state) }
-    }
-
-    /// Capture the current Link Session State from an application thread.
-    ///
-    ///  Thread-safe: no
-    ///
-    ///  Realtime-safe: yes
-    ///
-    ///  Provides a mechanism for capturing the Link Session State from an
-    ///  application thread (other than the audio thread). After capturing the session_state
-    ///  contains a snapshot of the current Link state, so it should be used in a local
-    ///  scope.
-    pub fn capture_app_session_state(&mut self, link: &AblLink) {
-        unsafe { abl_link_capture_app_session_state(link.link, self.session_state) }
-    }
-
     /// The tempo of the timeline, in Beats Per Minute.
     ///
     ///  This is a stable value that is appropriate for display to the user. Beat

@@ -13,6 +13,7 @@ fn main() {
     // Setup Link:
     let quantum = 4.0;
     let mut link = AblLink::new(120.0);
+    let mut session_state = SessionState::new();
     link.enable(true);
     link.enable_start_stop_sync(true);
 
@@ -22,8 +23,7 @@ fn main() {
 
     // Main Loop wrapped in Ctrl-C Handler:
     while running.load(Ordering::SeqCst) {
-        let mut session_state = SessionState::new();
-        session_state.capture_app_session_state(&link);
+        link.capture_app_session_state(&mut session_state);
 
         let time = link.clock_micros();
         let tempo = session_state.tempo();
