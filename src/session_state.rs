@@ -1,31 +1,4 @@
-use crate::abl_link::*;
 use crate::rust_bindings::*;
-
-// Potentially separate functionality of Audio and App States:
-// struct Audio;
-// struct App;
-
-// trait StateType {}
-// impl StateType for Audio {}
-// impl StateType for App {}
-
-// struct SessState<T: StateType> {
-//     session_state: abl_link_session_state,
-//     state_type: T,
-// }
-
-// impl<T: StateType> SessState<T> {
-//     // general
-// }
-// impl SessState<Audio> {}
-// impl SessState<App> {}
-
-// #[derive(Clone, Copy, PartialEq, Eq)]
-// pub enum State {
-//     Audio,
-//     App,
-//     New,
-// }
 
 ///  ### The representation of the current local state of a client in a Link Session
 ///
@@ -44,6 +17,14 @@ use crate::rust_bindings::*;
 ///  start/stop change requests will be communicated to all connected peers.
 pub struct SessionState {
     pub(crate) session_state: abl_link_session_state,
+    pub(crate) state_type: Option<StateType>,
+}
+
+/// Indicates if the captured [SessionState] is an App or Audio State.
+#[derive(Clone, Copy)]
+pub enum StateType {
+    App,
+    Audio,
 }
 
 impl Drop for SessionState {
@@ -67,8 +48,14 @@ impl SessionState {
         unsafe {
             SessionState {
                 session_state: abl_link_create_session_state(),
+                state_type: None,
             }
         }
+    }
+
+    /// Returns the [StateType] of this [SessionState]. ```None``` if no [SessionState] has been captured yet.
+    pub fn state_type(&self) -> Option<StateType> {
+        self.state_type
     }
 
     /// The tempo of the timeline, in Beats Per Minute.

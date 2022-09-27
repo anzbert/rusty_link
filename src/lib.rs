@@ -37,3 +37,4 @@ pub(crate) mod session_state;
 // PUBLIC API
 pub use abl_link::AblLink;
 pub use session_state::SessionState;
+pub use session_state::StateType;

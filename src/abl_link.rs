@@ -5,38 +5,14 @@
 //! This library attempts to be unopinionated and plain in
 //! copying the functionality of abl_link, while providing Rust's safety guarantees.
 //!
-//! [Ableton Link](http://ableton.github.io/link) is a technology that synchronizes musical beat, tempo,
-//! phase, and start/stop commands across multiple applications running
-//! on one or more devices. Applications on devices connected to a local
-//! network discover each other automatically and form a musical session
-//! in which each participant can perform independently: anyone can start
-//! or stop while still staying in time. Anyone can change the tempo, the
-//! others will follow. Anyone can join or leave without disrupting the session.
-//!
-//! ## Implementation
-//!
-//! - Rusty Link currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available, except for the destructors, which are implemented on the Drop trait.
-//! - The 'create' functions for abl_link and session_state have been renamed to 'new' to make the API more Rust-intuitive.
-//! - Functions have been implemented as methods on either the AblLink or the SessionState struct depending on which of the two the original C function mutates or uses as a parameter.
-//! - At this point, handling thread and realtime safety with Audio and App Session States is left up to the user, just like in the original library.
-//! - Ableton's documentation should mostly still apply to this library, since implementations have been copied as they were.
-//! - The function documentations have been copied from 'abl_link.h', except for the addition of the following safety warning for callbacks.
-//!
-//! ## Safety
-//!
-//! The callbacks/closures are handled by the underlying Link C++ library and may be run at any time.
-//! Data races and hidden mutations can occur if a closure captures and uses local variables at the same
-//! time as another thread.
-//!
-//! ## Credits
-//!
-//! Thanks to Magnus Herold for [his implementation](https://github.com/magdaddy/ableton-link-rs).
-//! This library started as a fork of his, but is now purely built on Ableton's basic C Wrapper.
+//! See [README.md](https://github.com/anzbert/rusty_link) for more info.
 
-use crate::rust_bindings::*;
-use crate::session_state;
-use crate::session_state::*;
+use crate::{
+    rust_bindings::*,
+    session_state::{SessionState, StateType},
+};
 
+/// The representation of an abl_link instance
 pub struct AblLink {
     pub(crate) link: abl_link,
 }
@@ -128,6 +104,7 @@ impl AblLink {
     ///  of the current Link Session State, so it should be used in a local scope. The
     ///  session_state should not be created on the audio thread.
     pub fn capture_audio_session_state(&self, session_state: &mut SessionState) {
+        session_state.state_type = Some(StateType::Audio);
         unsafe { abl_link_capture_audio_session_state(self.link, session_state.session_state) }
     }
 
@@ -142,6 +119,7 @@ impl AblLink {
     ///  contains a snapshot of the current Link state, so it should be used in a local
     ///  scope.
     pub fn capture_app_session_state(&self, session_state: &mut SessionState) {
+        session_state.state_type = Some(StateType::App);
         unsafe { abl_link_capture_app_session_state(self.link, session_state.session_state) }
     }
 
@@ -154,8 +132,16 @@ impl AblLink {
     ///  This function should ONLY be called in the audio thread. The given
     ///  session_state will replace the current Link state. Modifications will be
     ///  communicated to other peers in the session.
-    pub fn commit_audio_session_state(&mut self, ss: &SessionState) {
-        unsafe { abl_link_commit_audio_session_state(self.link, ss.session_state) }
+    pub fn commit_audio_session_state(&mut self, session_state: &SessionState) {
+        match session_state.state_type {
+            Some(StateType::Audio) => unsafe {
+                abl_link_commit_audio_session_state(self.link, session_state.session_state)
+            },
+            Some(StateType::App) => {
+                panic!("ERROR: Tried to commit non-Audio SessionState as Audio SessionState. Capture appropriate State before committing.")
+            }
+            None => panic!("ERROR: Tried to commit empty SessionState as Audio SessionState. Capture appropriate State before committing."),
+        }
     }
 
     ///  Commit the given Session State to the Link session from an application thread.
@@ -167,8 +153,16 @@ impl AblLink {
     ///  The given session_state will replace the current Link Session State.
     ///  Modifications of the Session State will be communicated to other peers in the
     ///  session.
-    pub fn commit_app_session_state(&mut self, ss: &SessionState) {
-        unsafe { abl_link_commit_app_session_state(self.link, ss.session_state) }
+    pub fn commit_app_session_state(&mut self, session_state: &SessionState) {
+        match session_state.state_type {
+            Some(StateType::App) => unsafe {
+                abl_link_commit_app_session_state(self.link, session_state.session_state)
+            },
+            Some(StateType::Audio) => {
+                panic!("ERROR: Tried to commit non-App SessionState as App SessionState. Capture appropriate State before committing.")
+            }
+            None => panic!("ERROR: Tried to commit empty SessionState as App SessionState. Capture appropriate State before committing."),
+        }
     }
 
     ///  SAFETY: The callbacks/closures are handled by the underlying Link C++ library and may be run at any time.
