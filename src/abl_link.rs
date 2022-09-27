@@ -1,18 +1,9 @@
-//! # Rusty Link
-//!
-//! Rusty Link is a Rust wrapper of [abl_link](https://github.com/Ableton/link/tree/master/extensions/abl_link), which
-//! is a C 11 wrapper made by Ableton for their C++ codebase.
-//! This library attempts to be unopinionated and plain in
-//! copying the functionality of abl_link, while providing Rust's safety guarantees.
-//!
-//! See [README.md](https://github.com/anzbert/rusty_link) for more info.
-
 use crate::{
     rust_bindings::*,
     session_state::{SessionState, StateType},
 };
 
-/// The representation of an abl_link instance
+/// The representation of an abl_link instance.
 pub struct AblLink {
     pub(crate) link: abl_link,
 }

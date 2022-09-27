@@ -1,6 +1,6 @@
 use crate::rust_bindings::*;
 
-///  ### The representation of the current local state of a client in a Link Session
+///  The representation of the current local state of a client in a Link Session.
 ///
 ///  A session state represents a timeline and the start/stop
 ///  state. The timeline is a representation of a mapping between time and
