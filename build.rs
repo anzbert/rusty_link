@@ -6,7 +6,6 @@ fn main() {
     // - CMAKE -
     // ---------
     let out_dir = cmake::Config::new("cmake")
-        // .cxxflag("-fno-rtti")
         .build_target("lib_abl_link_c")
         .build();
 
@@ -16,14 +15,14 @@ fn main() {
         .join("build")
         .join(cmake::Config::new("cmake").get_profile());
 
-    // NOT WINDOWS: Other generators just output directly to OUT_DIR
+    // NOT WINDOWS: Output directly to OUT_DIR
     #[cfg(not(target_os = "windows"))]
     let build_dir = out_dir.join("build");
 
     println!("cargo:rustc-link-search=native={}", build_dir.display());
     println!("cargo:rustc-link-lib=static=lib_abl_link_c");
 
-    // MACOS: Apparently important! Otherwise linker errors, apparently only on macOS
+    // MACOS: Link standard C++ lib, to prevent linker errors
     #[cfg(target_os = "macos")]
     println!("cargo:rustc-link-lib=c++");
 
@@ -34,13 +33,11 @@ fn main() {
     let bindings = bindgen::builder()
         .header("link/extensions/abl_link/include/abl_link.h")
         .allowlist_function("abl_link_.*")
-        // .blocklist_function("abl_link_set_.*callback.*")
-        // .blocklist_type("abl_link_.*callback.*")
         .generate()
-        .expect("Failed to generate bindings");
+        .expect("Failed to generate C bindings");
 
-    let bindings_file_path = out_dir.join("link_rs.rs");
+    let bindings_file_path = out_dir.join("link_bindings.rs");
     bindings
         .write_to_file(bindings_file_path)
-        .expect("Failed to write bindings to file");
+        .expect("Failed to write C bindings to link_bindings.rs");
 }
