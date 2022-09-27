@@ -19,7 +19,6 @@ others will follow. Anyone can join or leave without disrupting the session.
 - The `abl_link_create()` functions for abl_link and session_state have been renamed to `new()` to make the API more Rust-intuitive.
 - Functions have been implemented as methods on either the `AblLink` or the `SessionState` struct depending on which of the two the original C function uses as a primary parameter and what seemed to be the most intuitive.
 - At this point, handling thread and realtime safety with Audio and App Session States is left up to the user, just like in the original library.
-- A `StateType` enum has been added to indicate if the captured `SessionState` is an App or Audio State. `SessionState` has a getter method, `state_type()`, to retrieve this indicator. The enum is set through capturing a `SessionState` and it prevents Audio states to be committed as App states and vice versa.
 - Ableton's documentation should mostly still apply to this library, since implementations have been copied as they were.
 - The function documentations have been copied from 'abl_link.h', except for the addition of the following safety warning for callbacks.
 

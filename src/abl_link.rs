@@ -1,7 +1,4 @@
-use crate::{
-    rust_bindings::*,
-    session_state::{SessionState, StateType},
-};
+use crate::{rust_bindings::*, session_state::SessionState};
 
 /// The representation of an abl_link instance.
 pub struct AblLink {
@@ -95,7 +92,6 @@ impl AblLink {
     ///  of the current Link Session State, so it should be used in a local scope. The
     ///  session_state should not be created on the audio thread.
     pub fn capture_audio_session_state(&self, session_state: &mut SessionState) {
-        session_state.state_type = Some(StateType::Audio);
         unsafe { abl_link_capture_audio_session_state(self.link, session_state.session_state) }
     }
 
@@ -110,8 +106,7 @@ impl AblLink {
     ///  contains a snapshot of the current Link state, so it should be used in a local
     ///  scope.
     pub fn capture_app_session_state(&self, session_state: &mut SessionState) {
-        session_state.state_type = Some(StateType::App);
-        unsafe { abl_link_capture_app_session_state(self.link, session_state.session_state) }
+        unsafe { abl_link_capture_app_session_state(self.link, session_state.session_state) };
     }
 
     ///  Commit the given Session State to the Link session from the audio thread.
@@ -124,15 +119,7 @@ impl AblLink {
     ///  session_state will replace the current Link state. Modifications will be
     ///  communicated to other peers in the session.
     pub fn commit_audio_session_state(&mut self, session_state: &SessionState) {
-        match session_state.state_type {
-            Some(StateType::Audio) => unsafe {
-                abl_link_commit_audio_session_state(self.link, session_state.session_state)
-            },
-            Some(StateType::App) => {
-                panic!("ERROR: Tried to commit non-Audio SessionState as Audio SessionState. Capture appropriate State before committing.")
-            }
-            None => panic!("ERROR: Tried to commit empty SessionState as Audio SessionState. Capture appropriate State before committing."),
-        }
+        unsafe { abl_link_commit_audio_session_state(self.link, session_state.session_state) };
     }
 
     ///  Commit the given Session State to the Link session from an application thread.
@@ -145,15 +132,7 @@ impl AblLink {
     ///  Modifications of the Session State will be communicated to other peers in the
     ///  session.
     pub fn commit_app_session_state(&mut self, session_state: &SessionState) {
-        match session_state.state_type {
-            Some(StateType::App) => unsafe {
-                abl_link_commit_app_session_state(self.link, session_state.session_state)
-            },
-            Some(StateType::Audio) => {
-                panic!("ERROR: Tried to commit non-App SessionState as App SessionState. Capture appropriate State before committing.")
-            }
-            None => panic!("ERROR: Tried to commit empty SessionState as App SessionState. Capture appropriate State before committing."),
-        }
+        unsafe { abl_link_commit_app_session_state(self.link, session_state.session_state) };
     }
 
     ///  SAFETY: The callbacks/closures are handled by the underlying Link C++ library and may be run at any time.
