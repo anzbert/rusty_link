@@ -6,7 +6,7 @@ edition = "2021"
 description = "Plain Rust bindings for Ableton Link's C 11 Wrapper"
 repository = "https://github.com/anzbert/rusty_link"
 readme = "README.md"
-license-file = "LICENSE.md"
+license-file = "LICENSE"
 keywords = ["ableton", "link"]
 categories = ["api-bindings"]
 
