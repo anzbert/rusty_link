@@ -47,3 +47,7 @@ I made this library to learn about FFI in Rust and I started it as a fork of his
 
 Some code for splitting closures has been borrowed from [ffi_helpers](https://crates.io/crates/ffi_helpers) with altered functionality. Thanks to Michael F Bryan for his work.
 [Pull request](https://github.com/Michael-F-Bryan/ffi_helpers/pull/8) to ffi_helpers pending.
+
+## Links
+
+I also made an Ableton Link wrapper plugin for Flutter, called [f_link](https://pub.dev/packages/f_link), based on what I learned in this project.
