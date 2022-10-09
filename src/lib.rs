@@ -18,6 +18,7 @@ pub(crate) mod rust_bindings {
 
 pub(crate) mod abl_link;
 pub(crate) mod session_state;
+mod split;
 
 // PUBLIC API
 pub use abl_link::AblLink;

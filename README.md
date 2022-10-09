@@ -28,7 +28,22 @@ The callbacks/closures are handled by the underlying Link C++ library and may be
 Data races and hidden mutations can occur if a closure captures and uses local variables at the same
 time as another thread.
 
+## Feedback
+
+Pull requests and feedback in the discussions section is very welcome!
+
+## License
+
+Ableton Link is dual licensed under GPLv2+ and a proprietary [license](https://github.com/Ableton/link/blob/master/LICENSE.md).
+
+This means that this wrapper is automatically under the GPLv2+ as well. A copy of the license is distributed with the source code.
+
+If you would like to incorporate Link into a proprietary software application, please contact Ableton at <link-devs@ableton.com>.
+
 ## Credits
 
 Thanks to Magnus Herold for [his implementation](https://github.com/magdaddy/ableton-link-rs).
-I made this library to learn about FFI in Rust and I started it as a fork of his. Unlike his library, which adds additional mappings, this one is purely built on Ableton's plain C Wrapper.
+I made this library to learn about FFI in Rust and I started it as a fork of his. His library is great and adds a number of additional mappings, such as a ones to Clock in Ableton's C++ code. This crate on the other hand is purely built on Ableton's own C Wrapper, and requires Host Time Filters and Clock helper functions to be implemented in pure Rust, if these are required by the user.
+
+Some code for splitting closures has been borrowed from [ffi_helpers](https://crates.io/crates/ffi_helpers) with altered functionality. Thanks to Michael F Bryan for his work.
+[Pull request](https://github.com/Michael-F-Bryan/ffi_helpers/pull/8) to ffi_helpers pending.
