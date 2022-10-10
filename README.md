@@ -24,7 +24,7 @@ others will follow. Anyone can join or leave without disrupting the session.
 
 ## Safety
 
-The callback functions `set_num_peers_callback`, `set_tempo_callback` and `set_start_stop_callback` are handled by the underlying Link C++ library and may be run at any time.
+The callback functions / closures set with `set_num_peers_callback`, `set_tempo_callback` and `set_start_stop_callback` are handled by the underlying Link C++ library and may be run at any time.
 Data races and hidden mutations can occur if a closure captures and uses local variables at the same
 time as another thread.
 
