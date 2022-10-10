@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.14)
 
 # Build Link with the official C-Extension as a static library called 'lib_abl_link_c'
 project(link-with-c-extension)
