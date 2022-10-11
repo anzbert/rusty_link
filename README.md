@@ -1,3 +1,6 @@
+[![Crate](https://img.shields.io/crates/v/rusty_link.svg)](https://crates.io/crates/rusty_link)
+[![API](https://docs.rs/rusty_link/badge.svg)](https://docs.rs/rusty_link)
+
 # rusty_link
 
 rusty_link is a Rust wrapper of [abl_link](https://github.com/Ableton/link/tree/master/extensions/abl_link), which
