@@ -200,8 +200,7 @@ impl AblLink {
         }
     }
 
-    ///  Delete the callback to be notified when the number of
-    ///  peers in the Link session changes.
+    ///  Delete the callback which notifies when the number of peers in the Link session changes.
     ///
     ///  Thread-safe: yes
     ///
@@ -217,7 +216,7 @@ impl AblLink {
         }
     }
 
-    ///  Delete the callback to be notified when the session tempo changes.
+    ///  Delete the callback which notifies when the session tempo changes.
     ///
     ///  Thread-safe: yes
     ///
@@ -233,7 +232,7 @@ impl AblLink {
         }
     }
 
-    ///  Delete the callback to be notified when the state of start/stop isPlaying changes.
+    ///  Delete the callback which notifies when the state of start/stop isPlaying changes.
     ///
     ///  Thread-safe: yes
     ///
