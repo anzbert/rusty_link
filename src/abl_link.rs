@@ -1,3 +1,5 @@
+use std::os::raw::c_void;
+
 use crate::{rust_bindings::*, session_state::SessionState, split};
 
 /// The representation of an abl_link instance.
@@ -147,11 +149,11 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
-    pub fn set_num_peers_callback<C: FnMut(u64)>(&mut self, closure: &mut C) {
+    pub fn set_num_peers_callback<C: FnMut(u64)>(&mut self, mut closure: C) {
         unsafe {
-            let (state, callback) = split::split_closure_trailing_data(closure);
+            let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_num_peers_callback(self.link, Some(callback), state);
-        }
+        };
     }
 
     ///  SAFETY: The callbacks/closures are handled by the underlying Link C++ library and may be run at any time.
@@ -165,9 +167,9 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
-    pub fn set_tempo_callback<C: FnMut(f64)>(&mut self, closure: &mut C) {
+    pub fn set_tempo_callback<C: FnMut(f64)>(&mut self, mut closure: C) {
         unsafe {
-            let (state, callback) = split::split_closure_trailing_data(closure);
+            let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_tempo_callback(self.link, Some(callback), state);
         }
     }
@@ -183,10 +185,59 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
-    pub fn set_start_stop_callback<C: FnMut(bool)>(&mut self, closure: &mut C) {
+    pub fn set_start_stop_callback<C: FnMut(bool)>(&mut self, mut closure: C) {
         unsafe {
-            let (state, callback) = split::split_closure_trailing_data(closure);
+            let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_start_stop_callback(self.link, Some(callback), state);
+        }
+    }
+
+    ///  Delete the callback to be notified when the number of
+    ///  peers in the Link session changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    pub fn delete_num_peers_callback(&mut self) {
+        extern "C" fn empty_fn(_: u64, _: *mut std::ffi::c_void) {}
+        unsafe {
+            abl_link_set_num_peers_callback(
+                self.link,
+                Some(empty_fn),
+                std::ptr::null_mut() as *mut c_void,
+            );
+        }
+    }
+
+    ///  Delete the callback to be notified when the session tempo changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    pub fn delete_tempo_callback(&mut self) {
+        extern "C" fn empty_fn(_: f64, _: *mut std::ffi::c_void) {}
+        unsafe {
+            abl_link_set_tempo_callback(
+                self.link,
+                Some(empty_fn),
+                std::ptr::null_mut() as *mut c_void,
+            );
+        }
+    }
+
+    ///  Delete the callback to be notified when the state of start/stop isPlaying changes.
+    ///
+    ///  Thread-safe: yes
+    ///
+    ///  Realtime-safe: no
+    pub fn delete_start_stop_callback(&mut self) {
+        extern "C" fn empty_fn(_: bool, _: *mut std::ffi::c_void) {}
+        unsafe {
+            abl_link_set_start_stop_callback(
+                self.link,
+                Some(empty_fn),
+                std::ptr::null_mut() as *mut c_void,
+            );
         }
     }
 }

@@ -18,9 +18,10 @@ others will follow. Anyone can join or leave without disrupting the session.
 - rusty_link currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available, except for the destructors, which are implemented on the Drop trait.
 - The `abl_link_create()` functions for abl_link and session_state have been renamed to `new()` to make the API more Rust-intuitive.
 - Functions have been implemented as methods on either the `AblLink` or the `SessionState` struct depending on which of the two the original C function uses as a primary parameter and what seemed to be the most intuitive.
-- At this point, handling thread and realtime safety with Audio and App Session States is left up to the user, just like in the original library.
+- Handling thread and realtime safety with Audio and App Session States is left up to the user, just like in the original library.
 - Ableton's documentation should mostly still apply to this library, since implementations have been copied as they were.
-- The function documentations have been copied from 'abl_link.h', except for the addition of the following safety warning for callbacks.
+- The function documentations have been copied from 'abl_link.h', except for the addition of the safety warning for `start_stop`, `tempo` and `num_peers` callbacks.
+- Delete functions have been added to delete previously set callbacks.
 
 ## Safety
 
@@ -50,4 +51,4 @@ Some code for splitting closures has been borrowed from [ffi_helpers](https://cr
 
 ## Links
 
-I also made an Ableton Link wrapper plugin for Flutter, called [f_link](https://pub.dev/packages/f_link), based on what I learned in this project.
+I also made a multi-platform Ableton Link wrapper for Flutter, called [f_link](https://pub.dev/packages/f_link), based on what I learned in this project.

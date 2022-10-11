@@ -18,8 +18,9 @@ fn main() {
     link.enable_start_stop_sync(true);
 
     // Callback Example:
-    let mut closure = |value: bool| println!("is_playing: {} with quantum: {}", value, quantum);
-    link.set_start_stop_callback(&mut closure);
+    link.set_start_stop_callback(|value: bool| {
+        println!("is_playing: {} with quantum: {}", value, quantum)
+    });
 
     // Main Loop wrapped in Ctrl-C Handler:
     while running.load(Ordering::SeqCst) {
