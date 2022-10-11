@@ -1,6 +1,5 @@
-use std::os::raw::c_void;
-
 use crate::{rust_bindings::*, session_state::SessionState, split};
+use std::os::raw::c_void;
 
 /// The representation of an abl_link instance.
 pub struct AblLink {
@@ -137,10 +136,6 @@ impl AblLink {
         unsafe { abl_link_commit_app_session_state(self.link, session_state.session_state) };
     }
 
-    ///  SAFETY: The callbacks/closures are handled by the underlying Link C++ library and may be run at any time.
-    ///  Data races and hidden mutations can occur if a closure captures and uses local variables at the same
-    ///  time as another thread.
-    ///
     ///  Register a callback to be notified when the number of
     ///  peers in the Link session changes.
     ///
@@ -149,6 +144,13 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
+    ///
+    ///  ## Safety:
+    ///   
+    ///  The callbacks/closures are handled by the underlying Link C++ library
+    ///  and may be run at any time.
+    ///  Data races and hidden mutations can occur if a closure captures and uses local
+    ///  variables at the same time as another thread.
     pub fn set_num_peers_callback<C: FnMut(u64)>(&mut self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
@@ -156,10 +158,6 @@ impl AblLink {
         };
     }
 
-    ///  SAFETY: The callbacks/closures are handled by the underlying Link C++ library and may be run at any time.
-    ///  Data races and hidden mutations can occur if a closure captures and uses local variables at the same
-    ///  time as another thread.
-    ///
     ///  Register a callback to be notified when the session tempo changes.
     ///
     ///  Thread-safe: yes
@@ -167,6 +165,13 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
+    ///
+    ///  ## Safety:
+    ///  
+    ///  The callbacks/closures are handled by the underlying Link C++ library
+    ///  and may be run at any time.
+    ///  Data races and hidden mutations can occur if a closure captures and uses local
+    ///  variables at the same time as another thread.
     pub fn set_tempo_callback<C: FnMut(f64)>(&mut self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
@@ -174,10 +179,6 @@ impl AblLink {
         }
     }
 
-    ///  SAFETY: The callbacks/closures are handled by the underlying Link C++ library and may be run at any time.
-    ///  Data races and hidden mutations can occur if a closure captures and uses local variables at the same
-    ///  time as another thread.
-    ///
     ///  Register a callback to be notified when the state of start/stop isPlaying changes.
     ///
     ///  Thread-safe: yes
@@ -185,6 +186,13 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
+    ///
+    ///  ## Safety:
+    ///  
+    ///  The callbacks/closures are handled by the underlying Link C++ library
+    ///  and may be run at any time.
+    ///  Data races and hidden mutations can occur if a closure captures and uses local
+    ///  variables at the same time as another thread.
     pub fn set_start_stop_callback<C: FnMut(bool)>(&mut self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
@@ -199,7 +207,7 @@ impl AblLink {
     ///
     ///  Realtime-safe: no
     pub fn delete_num_peers_callback(&mut self) {
-        extern "C" fn empty_fn(_: u64, _: *mut std::ffi::c_void) {}
+        extern "C" fn empty_fn(_: u64, _: *mut c_void) {}
         unsafe {
             abl_link_set_num_peers_callback(
                 self.link,
@@ -215,7 +223,7 @@ impl AblLink {
     ///
     ///  Realtime-safe: no
     pub fn delete_tempo_callback(&mut self) {
-        extern "C" fn empty_fn(_: f64, _: *mut std::ffi::c_void) {}
+        extern "C" fn empty_fn(_: f64, _: *mut c_void) {}
         unsafe {
             abl_link_set_tempo_callback(
                 self.link,
@@ -231,7 +239,7 @@ impl AblLink {
     ///
     ///  Realtime-safe: no
     pub fn delete_start_stop_callback(&mut self) {
-        extern "C" fn empty_fn(_: bool, _: *mut std::ffi::c_void) {}
+        extern "C" fn empty_fn(_: bool, _: *mut c_void) {}
         unsafe {
             abl_link_set_start_stop_callback(
                 self.link,

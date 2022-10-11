@@ -1,9 +1,9 @@
 [package]
 name = "rusty_link"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Andreas Mueller <anzbert@gmail.com>"]
 edition = "2021"
-description = "Plain Rust bindings for Ableton Link's C 11 Wrapper"
+description = "Rust bindings for Ableton Link's C Wrapper Extension (abl_link)"
 repository = "https://github.com/anzbert/rusty_link"
 readme = "README.md"
 license-file = "LICENSE"
