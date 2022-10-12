@@ -1,6 +1,6 @@
 [package]
 name = "rusty_link"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Andreas Mueller <anzbert@gmail.com>"]
 edition = "2021"
 description = "Rust bindings for Ableton Link's C Wrapper Extension (abl_link)"
@@ -18,7 +18,7 @@ categories = ["api-bindings"]
 # ffi_helpers = { git = "https://github.com/anzbert/ffi_helpers", version = "0.3.0" }
 
 [dev-dependencies]
-ctrlc = "^3.2.3" # for link_hut example
+crossterm = "^0.25.0" # For Example
 
 [build-dependencies]
 cmake = "^0.1.48"
