@@ -26,7 +26,7 @@ others will follow. Anyone can join or leave without disrupting the session.
 
 ## Example
 
-This crate includes a Rust port of the Ableton Link ['link_hut'](https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c) example written in C. See it [here](https://github.com/anzbert/rusty_link/blob/master/examples/link_hut.rs).
+This crate includes a Rust port of the Ableton Link ['link_hut'](https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c) C example. See it [here](https://github.com/anzbert/rusty_link/blob/master/examples/link_hut.rs).
 
 ## Safety
 
@@ -42,7 +42,7 @@ Pull requests and feedback in the github discussion section is very welcome!
 
 Ableton Link is dual licensed under GPLv2+ and a proprietary [license](https://github.com/Ableton/link/blob/master/LICENSE.md).
 
-This means that this wrapper is automatically under the GPLv2+ as well. A copy of the license is distributed with the source code.
+This means that this wrapper is automatically under the GPLv2+ as well. See the included Licence file.
 
 If you would like to incorporate Link into a proprietary software application, please contact Ableton at <link-devs@ableton.com>.
 
