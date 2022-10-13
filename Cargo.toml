@@ -15,6 +15,7 @@ categories = ["api-bindings"]
 
 [dev-dependencies]
 crossterm = "^0.25.0" # Used in 'link_hut' example
+cpal = "^0.14.0"
 
 [build-dependencies]
 cmake = "^0.1.48"

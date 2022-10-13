@@ -1,4 +1,4 @@
-// This example is a Rust port of Ableton Link 'link_hut' in C.
+// This example is a Rust port of 'link_hut' from the 'abl_link' extension (written in C).
 // Source: https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c
 
 use crossterm::{
