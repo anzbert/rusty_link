@@ -24,6 +24,10 @@ others will follow. Anyone can join or leave without disrupting the session.
 - Functions have been implemented as methods on either the `AblLink` or the `SessionState` struct depending on which of the two the original C function uses as a primary parameter and what seemed to be the most intuitive.
 - Delete functions have been added to delete previously set `num_peers`, `start_stop` and `tempo` callbacks.
 
+## Example
+
+This crate includes a Rust port of the Ableton Link ['link_hut'](https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c) example written in C. See it [here](https://github.com/anzbert/rusty_link/blob/master/examples/link_hut.rs).
+
 ## Safety
 
 The callback functions / closures set with `set_num_peers_callback`, `set_tempo_callback` and `set_start_stop_callback` are handled by the underlying Link C++ library and may be run at any time.
