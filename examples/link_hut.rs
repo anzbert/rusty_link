@@ -1,5 +1,5 @@
-// This example is a Rust port of the Ableton Link 'link_hut' example written in C.
-// Original: https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c
+// This example is a Rust port of Ableton Link 'link_hut' in C.
+// Source: https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c
 
 use crossterm::{
     cursor,
@@ -10,7 +10,7 @@ use crossterm::{
 };
 use rusty_link::{AblLink, SessionState};
 use std::{
-    io::{stdout, Write},
+    io::{self, Write},
     time::Duration,
 };
 
@@ -33,6 +33,10 @@ impl State {
 
     pub fn update_app_state(&mut self) {
         self.link.capture_app_session_state(&mut self.session_state);
+    }
+
+    pub fn commit_app_state(&mut self) {
+        self.link.commit_app_session_state(&self.session_state);
     }
 }
 
@@ -66,7 +70,7 @@ fn print_state(state: &mut State) {
         }
     }
 
-    let mut stdout = stdout();
+    let mut stdout = io::stdout();
     queue!(
         stdout,
         cursor::SavePosition,
@@ -85,10 +89,8 @@ fn print_state(state: &mut State) {
 }
 
 fn poll_input(state: &mut State) -> crossterm::Result<()> {
-    // `poll()` waits for an `Event` for a given time period
+    // Poll input for 50 milliseconds
     if poll(Duration::from_millis(50))? {
-        // It's guaranteed that the `read()` won't block when the `poll()`
-        // function returns `true`
         if let Event::Key(event) = read()? {
             state.update_app_state();
             let tempo = state.session_state.tempo();
@@ -96,34 +98,52 @@ fn poll_input(state: &mut State) -> crossterm::Result<()> {
             let enabled = state.link.is_enabled();
 
             match event.code {
+                // Quit
                 KeyCode::Char('q') => state.running = false,
+
+                // Enable Link Toggle
                 KeyCode::Char('a') => state.link.enable(!enabled),
-                KeyCode::Char('w') => state
-                    .session_state
-                    .set_tempo((tempo - 1.).clamp(20., 200.), time_stamp),
-                KeyCode::Char('e') => state
-                    .session_state
-                    .set_tempo((tempo + 1.).clamp(20., 200.), time_stamp),
-                KeyCode::Char('r') => state.quantum = (state.quantum - 1.).clamp(0., 8.),
-                KeyCode::Char('t') => state.quantum = (state.quantum + 1.).clamp(0., 8.),
+
+                // Tempo
+                KeyCode::Char('w') => {
+                    state
+                        .session_state
+                        .set_tempo((tempo - 1.).clamp(20., 999.), time_stamp);
+                    state.commit_app_state();
+                }
+                KeyCode::Char('e') => {
+                    state
+                        .session_state
+                        .set_tempo((tempo + 1.).clamp(20., 999.), time_stamp);
+                    state.commit_app_state();
+                }
+
+                // Quantum
+                KeyCode::Char('r') => state.quantum = (state.quantum - 1.).clamp(1., 16.),
+                KeyCode::Char('t') => state.quantum = (state.quantum + 1.).clamp(1., 16.),
+
+                // Start Stop Sync Toggle
                 KeyCode::Char('s') => state
                     .link
                     .enable_start_stop_sync(!state.link.is_start_stop_sync_enabled()),
+
+                // Play / Stop Toggle
                 KeyCode::Char(' ') => {
                     if state.session_state.is_playing() {
                         state.session_state.set_is_playing(false, time_stamp as u64);
+                        state.commit_app_state();
                     } else {
                         state.session_state.set_is_playing_and_request_beat_at_time(
                             true,
                             time_stamp as u64,
                             0.,
                             state.quantum,
-                        )
+                        );
+                        state.commit_app_state();
                     }
                 }
                 _ => {}
             }
-            state.link.commit_app_session_state(&state.session_state);
         }
     }
     Ok(())
