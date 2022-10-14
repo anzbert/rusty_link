@@ -4,17 +4,19 @@
 mod audio;
 
 fn main() {
-    println!("\n\n < L I N K  H U T >\n");
+    println!("Example under development...");
 
-    println!("usage:");
-    println!("  enable / disable Link: a");
-    println!("  start / stop: space");
-    println!("  decrease / increase tempo: w / e");
-    println!("  decrease / increase quantum: r / t");
-    println!("  enable / disable start stop sync: s");
-    println!("  quit: q");
+    // println!("\n\n < L I N K  H U T >\n");
 
-    println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
+    // println!("usage:");
+    // println!("  enable / disable Link: a");
+    // println!("  start / stop: space");
+    // println!("  decrease / increase tempo: w / e");
+    // println!("  decrease / increase quantum: r / t");
+    // println!("  enable / disable start stop sync: s");
+    // println!("  quit: q");
+
+    // println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
 
     // terminal::enable_raw_mode().unwrap();
 
