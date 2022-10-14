@@ -5,26 +5,29 @@ fn main() {
     // ---------
     // - CMAKE -
     // ---------
+
+    // Get cmake config from 'cmake/CMakeLists.txt', build and return $OUT_DIR
     let out_dir = cmake::Config::new("cmake")
         .build_target("lib_abl_link_c")
         .build();
 
-    // WINDOWS: Visual Studio output to OUT_DIR/{Debug, Release, RelWithDebInfo} etc.
+    // WINDOWS: Builds into $OUT_DIR/{Debug, Release, ...}
     #[cfg(target_os = "windows")]
     let build_dir = out_dir
         .join("build")
         .join(cmake::Config::new("cmake").get_profile());
 
-    // NOT WINDOWS: Output directly to OUT_DIR
+    // NON-WINDOWS: Builds into $OUT_DIR/build
     #[cfg(not(target_os = "windows"))]
     let build_dir = out_dir.join("build");
 
-    println!("cargo:rustc-link-search=native={}", build_dir.display());
-    println!("cargo:rustc-link-lib=static=lib_abl_link_c");
-
-    // MACOS: Link standard C++ lib, to prevent linker errors
+    // MACOS: Link standard C++ lib
     #[cfg(target_os = "macos")]
     println!("cargo:rustc-link-lib=c++");
+
+    // Statically link finished cmake build into executable
+    println!("cargo:rustc-link-search=native={}", build_dir.display());
+    println!("cargo:rustc-link-lib=static=lib_abl_link_c");
 
     // -----------
     // - BINDGEN -
@@ -36,8 +39,7 @@ fn main() {
         .generate()
         .expect("Failed to generate C bindings");
 
-    let bindings_file_path = out_dir.join("link_bindings.rs");
     bindings
-        .write_to_file(bindings_file_path)
+        .write_to_file(out_dir.join("link_bindings.rs"))
         .expect("Failed to write C bindings to link_bindings.rs");
 }
