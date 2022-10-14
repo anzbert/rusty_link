@@ -11,7 +11,7 @@ fn main() {
         .build_target("lib_abl_link_c")
         .build();
 
-    // WINDOWS: Builds into $OUT_DIR/{Debug, Release, ...}
+    // WINDOWS: Builds into $OUT_DIR/build/{Debug, Release, ...}
     #[cfg(target_os = "windows")]
     let build_dir = out_dir
         .join("build")
