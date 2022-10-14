@@ -26,7 +26,19 @@ others will follow. Anyone can join or leave without disrupting the session.
 
 ## Example
 
-This crate includes a Rust port of the Ableton Link ['link_hut'](https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c) C example. See it [here](https://github.com/anzbert/rusty_link/blob/master/examples/link_hut.rs).
+This crate includes a Rust port of the Ableton Link ['link_hut'](https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c) C example. See the code [here](https://github.com/anzbert/rusty_link/blob/master/examples/link_hut.rs).
+
+To run the example, clone this repository and change into its directory. Then fetch the Ableton Link source by initializing the git submodules with:
+
+```
+git submodule update --init --recursive
+```
+
+Compile and run a release build with:
+
+```
+cargo run --release --example link_hut_silent
+```
 
 ## Safety
 
@@ -36,7 +48,7 @@ time as other code.
 
 ## Feedback
 
-Pull requests and feedback in the github discussion section is very welcome!
+Pull requests and feedback in the github [Discussions](https://github.com/anzbert/rusty_link/discussions) section is very welcome!
 
 ## License
 

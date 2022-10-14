@@ -6,7 +6,7 @@ edition = "2021"
 description = "Rust bindings for Ableton Link's C Wrapper Extension (abl_link)"
 repository = "https://github.com/anzbert/rusty_link"
 readme = "README.md"
-license-file = "LICENSE"
+license = "GPL-2.0-or-later"
 keywords = ["ableton", "link"]
 categories = ["api-bindings"]
 
@@ -15,6 +15,7 @@ categories = ["api-bindings"]
 
 [dev-dependencies]
 crossterm = "^0.25.0" # Used in 'link_hut' example
+cpal = "^0.14.0"
 
 [build-dependencies]
 cmake = "^0.1.48"
