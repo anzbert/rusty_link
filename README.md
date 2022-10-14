@@ -40,11 +40,19 @@ Compile and run a release build with:
 cargo run --release --example link_hut_silent
 ```
 
+## Requirements
+
+Requires a recent version of CMake (3.14 or newer) to be installed and available in your terminal. Test with `cmake --version`.
+
 ## Safety
 
 The callback functions / closures set with `set_num_peers_callback`, `set_tempo_callback` and `set_start_stop_callback` are handled by the underlying Link C++ library and may be run at any time.
 Data races and hidden mutations can occur if a closure has captured local variables and uses them at the same
 time as other code.
+
+## Testing
+
+Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-PLAN.md) to test if your implementation of Ableton Link in your project meets all the expected requirements.
 
 ## Feedback
 
