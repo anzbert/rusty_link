@@ -1,8 +1,6 @@
 // This example is a Rust port of 'link_hut' (written in C++ / with audio thread).
 // Source: https://github.com/Ableton/link/tree/master/examples
 
-use core::time;
-
 use crate::audio::AudioEngine;
 
 mod audio;
@@ -16,7 +14,7 @@ fn main() {
     let audio = AudioEngine::new();
 
     loop {
-        std::thread::sleep(time::Duration::from_millis(100));
+        audio.click();
     }
 
     // println!("\n\n < L I N K  H U T >\n");
