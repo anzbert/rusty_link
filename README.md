@@ -69,7 +69,7 @@ If you would like to incorporate Link into a proprietary software application, p
 ## Credits
 
 Thanks to Magnus Herold for [his implementation](https://crates.io/crates/ableton-link).
-I made this library to learn about FFI in Rust and I started it as a fork of his. His library is great and adds a number of additional mappings, such as the ones to Clock in Ableton's C++ code. This crate on the other hand is purely built on Ableton's own C Wrapper, and requires addidional functions to be implemented in pure Rust, if these are required by the user.
+I made this library to learn about FFI in Rust and I started it as a fork of his. His library is great and adds a number of additional mappings, such as the ones to Clock in Ableton's C++ code. This crate on the other hand is purely built on Ableton's own C Wrapper, and requires additional functions to be implemented in pure Rust, if these are required by the user.
 
 Some code for splitting closures has been borrowed from [ffi_helpers](https://crates.io/crates/ffi_helpers) with altered functionality. Thanks to Michael F Bryan for his work.
 [Pull request](https://github.com/Michael-F-Bryan/ffi_helpers/pull/8) to ffi_helpers pending.
