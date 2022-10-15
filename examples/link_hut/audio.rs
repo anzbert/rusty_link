@@ -28,25 +28,15 @@ impl AudioEngine {
             .with_max_sample_rate();
 
         let mut config = supported_config.config();
-        config.buffer_size = BufferSize::Fixed(255);
+        let buffer_size = 255;
+        config.buffer_size = BufferSize::Fixed(buffer_size);
 
         let err_fn = |err| eprintln!("an error occurred on the output audio stream: {}", err);
 
-        let sample_rate = config.sample_rate.0 as f32; // something like 44100
-        let mut sample_clock = 0f32;
+        let mut sine = MonoSine::new(config.sample_rate.0 as f32, config.channels, 440.0);
 
         let data_fn = move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-            let buffer_size = data.len();
-            let mut buffer = Vec::<f32>::with_capacity(buffer_size);
-
-            for _sample in 0..buffer_size / 2 {
-                sample_clock = (sample_clock + 1.0) % sample_rate;
-                // println!("{}", sample_clock);
-                buffer
-                    .push((sample_clock * 440.0 * 2.0 * std::f32::consts::PI / sample_rate).sin());
-                buffer
-                    .push((sample_clock * 440.0 * 2.0 * std::f32::consts::PI / sample_rate).sin());
-            }
+            let buffer = sine.progress(buffer_size);
 
             for (i, sample) in data.iter_mut().enumerate() {
                 *sample = Sample::from(&buffer[i]);
@@ -75,5 +65,41 @@ impl AudioEngine {
 fn write_silence<T: Sample>(data: &mut [T], _: &cpal::OutputCallbackInfo) {
     for sample in data.iter_mut() {
         *sample = Sample::from(&0.0);
+    }
+}
+
+pub struct MonoSine {
+    sample_clock: f32,
+    sample_rate: f32,
+    channels: u16,
+    pitch_freq: f32,
+}
+
+impl MonoSine {
+    pub fn new(sample_rate: f32, channels: u16, pitch_freq: f32) -> Self {
+        Self {
+            sample_clock: 0.,
+            sample_rate,
+            channels,
+            pitch_freq,
+        }
+    }
+
+    pub fn progress(&mut self, buffer_size: u32) -> Vec<f32> {
+        let mut buffer = Vec::<f32>::with_capacity((buffer_size * self.channels as u32) as usize);
+
+        for _ in 0..buffer_size {
+            self.sample_clock = (self.sample_clock + 1.0) % self.sample_rate;
+
+            let sample = (self.sample_clock * self.pitch_freq * 2.0 * std::f32::consts::PI
+                / self.sample_rate)
+                .sin();
+
+            for _channel in 0..self.channels {
+                buffer.push(sample);
+            }
+        }
+
+        buffer
     }
 }
