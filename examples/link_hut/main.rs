@@ -20,10 +20,10 @@ use std::{
     time::Duration,
 };
 
-use crate::audio_platform::AudioPlatform;
+use crate::audio_engine::AudioEngine;
 
 mod audio_engine;
-mod audio_platform;
+mod audio_platform_cpal;
 mod constants;
 mod synth;
 
@@ -52,31 +52,33 @@ fn main() {
 
     // Init Main State
     let link = AblLink::new(120.);
-    let audio_platform = AudioPlatform::new(&link, input_rx);
+    let audio_platform = AudioEngine::new(&link, input_rx);
 
     // UI
     let mut app_session_state = SessionState::new();
 
     '_UI_loop: while running.load(Ordering::Acquire) {
-        link.capture_app_session_state(&mut app_session_state);
+        audio_platform
+            .link
+            .capture_app_session_state(&mut app_session_state);
         print_state(
-            link.clock_micros(),
-            app_session_state,
-            link.is_enabled(),
-            link.num_peers(),
-            audio_platform.get_quantum(),
-            link.is_start_stop_sync_enabled(),
+            audio_platform.link.clock_micros(),
+            &app_session_state,
+            audio_platform.link.is_enabled(),
+            audio_platform.link.num_peers(),
+            audio_platform.quantum,
+            audio_platform.link.is_start_stop_sync_enabled(),
         );
         std::thread::sleep(Duration::from_millis(10));
     }
 
     // Exit App
-    input_thread.join();
+    input_thread.join().unwrap();
 }
 
 fn print_state(
     time: i64,
-    state: SessionState,
+    state: &SessionState,
     link_enabled: bool,
     num_peers: u64,
     quantum: f64,

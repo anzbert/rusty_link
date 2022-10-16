@@ -11,7 +11,6 @@ unsafe impl Sync for AblLink {}
 
 impl Drop for AblLink {
     fn drop(&mut self) {
-        // println!("Dropping AblLink");
         unsafe { abl_link_destroy(self.link) }
     }
 }
@@ -42,7 +41,7 @@ impl AblLink {
     ///  Thread-safe: yes
     ///
     ///  Realtime-safe: no
-    pub fn enable(&mut self, enable: bool) {
+    pub fn enable(&self, enable: bool) {
         unsafe { abl_link_enable(self.link, enable) }
     }
 
@@ -60,7 +59,7 @@ impl AblLink {
     ///  Thread-safe: yes
     ///
     ///  Realtime-safe: no
-    pub fn enable_start_stop_sync(&mut self, enable: bool) {
+    pub fn enable_start_stop_sync(&self, enable: bool) {
         unsafe { abl_link_enable_start_stop_sync(self.link, enable) }
     }
 
@@ -119,7 +118,7 @@ impl AblLink {
     ///  This function should ONLY be called in the audio thread. The given
     ///  session_state will replace the current Link state. Modifications will be
     ///  communicated to other peers in the session.
-    pub fn commit_audio_session_state(&mut self, session_state: &SessionState) {
+    pub fn commit_audio_session_state(&self, session_state: &SessionState) {
         unsafe { abl_link_commit_audio_session_state(self.link, session_state.session_state) };
     }
 
@@ -132,7 +131,7 @@ impl AblLink {
     ///  The given session_state will replace the current Link Session State.
     ///  Modifications of the Session State will be communicated to other peers in the
     ///  session.
-    pub fn commit_app_session_state(&mut self, session_state: &SessionState) {
+    pub fn commit_app_session_state(&self, session_state: &SessionState) {
         unsafe { abl_link_commit_app_session_state(self.link, session_state.session_state) };
     }
 
@@ -151,7 +150,7 @@ impl AblLink {
     ///  and may be run at any time.
     ///  Data races and hidden mutations can occur if a closure captures and uses local
     ///  variables at the same time as another thread.
-    pub fn set_num_peers_callback<C: FnMut(u64)>(&mut self, mut closure: C) {
+    pub fn set_num_peers_callback<C: FnMut(u64)>(&self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_num_peers_callback(self.link, Some(callback), state);
@@ -172,7 +171,7 @@ impl AblLink {
     ///  and may be run at any time.
     ///  Data races and hidden mutations can occur if a closure captures and uses local
     ///  variables at the same time as another thread.
-    pub fn set_tempo_callback<C: FnMut(f64)>(&mut self, mut closure: C) {
+    pub fn set_tempo_callback<C: FnMut(f64)>(&self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_tempo_callback(self.link, Some(callback), state);
@@ -193,7 +192,7 @@ impl AblLink {
     ///  and may be run at any time.
     ///  Data races and hidden mutations can occur if a closure captures and uses local
     ///  variables at the same time as another thread.
-    pub fn set_start_stop_callback<C: FnMut(bool)>(&mut self, mut closure: C) {
+    pub fn set_start_stop_callback<C: FnMut(bool)>(&self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_start_stop_callback(self.link, Some(callback), state);
@@ -205,7 +204,7 @@ impl AblLink {
     ///  Thread-safe: yes
     ///
     ///  Realtime-safe: no
-    pub fn delete_num_peers_callback(&mut self) {
+    pub fn delete_num_peers_callback(&self) {
         extern "C" fn empty_fn(_: u64, _: *mut c_void) {}
         unsafe {
             abl_link_set_num_peers_callback(
@@ -221,7 +220,7 @@ impl AblLink {
     ///  Thread-safe: yes
     ///
     ///  Realtime-safe: no
-    pub fn delete_tempo_callback(&mut self) {
+    pub fn delete_tempo_callback(&self) {
         extern "C" fn empty_fn(_: f64, _: *mut c_void) {}
         unsafe {
             abl_link_set_tempo_callback(
@@ -237,7 +236,7 @@ impl AblLink {
     ///  Thread-safe: yes
     ///
     ///  Realtime-safe: no
-    pub fn delete_start_stop_callback(&mut self) {
+    pub fn delete_start_stop_callback(&self) {
         extern "C" fn empty_fn(_: bool, _: *mut c_void) {}
         unsafe {
             abl_link_set_start_stop_callback(

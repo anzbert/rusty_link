@@ -46,9 +46,17 @@ Requires a recent version of CMake (3.14 or newer) to be installed and available
 
 ## Safety
 
-The callback functions / closures set with `set_num_peers_callback`, `set_tempo_callback` and `set_start_stop_callback` are handled by the underlying Link C++ library and may be run at any time.
-Data races and hidden mutations can occur if a closure has captured local variables and uses them at the same
-time as other code.
+### Thread and Realtime Safety
+
+['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) has doc comments about thread and realtime safety on some of its functions. Those comments have been copied to the functions of this library. A short explainer on what they mean:
+
+- Thread Safety: If marked as `Yes`, this function can be safely called from multiple threads.
+
+- Realtime Safety: If marked as `Yes`, this function can be called in a Realtime environment without blocking the thread. For example, an audio thread / callback.
+
+### Callback Handling
+
+The callback functions / closures set with `set_num_peers_callback`, `set_tempo_callback` and set_start_stop_callback` are handled by the underlying Link C++ library and may be run at any time. Data races and hidden mutations can occur if a closure has captured local variables and uses them at the same time as other code.
 
 ## Testing
 
