@@ -1,14 +1,6 @@
 // This example is a Rust port of 'link_hut' (written in C++ / with audio thread).
 // Source: https://github.com/Ableton/link/tree/master/examples
 
-use std::{
-    io::{self, Write},
-    sync::mpsc::{self, Receiver, Sender},
-    thread,
-    time::Duration,
-};
-
-use audio_thread::AudioThread;
 use crossterm::{
     cursor,
     event::{read, Event, KeyCode},
@@ -17,9 +9,21 @@ use crossterm::{
     terminal,
 };
 use rusty_link::{AblLink, SessionState};
+use std::{
+    io::{self, Write},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        mpsc::{self, Sender},
+        Arc,
+    },
+    thread,
+    time::Duration,
+};
+
+use crate::audio_platform::AudioPlatform;
 
 mod audio_engine;
-mod audio_thread;
+mod audio_platform;
 mod constants;
 mod synth;
 
@@ -36,51 +40,38 @@ fn main() {
 
     println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
 
+    // App running:
+    let running = Arc::new(AtomicBool::new(true));
+    let running_clone1 = Arc::clone(&running);
+
+    // Init Input Thread:
     let (input_tx, input_rx) = mpsc::channel::<InputCommand>();
     let input_thread = thread::spawn(move || {
-        poll_input(input_tx);
+        poll_input(input_tx, running_clone1);
     });
 
-    let state = State::new(input_rx);
+    // Init Main State
+    let link = AblLink::new(120.);
+    let audio_platform = AudioPlatform::new(&link, input_rx);
 
-    let mut session_state = SessionState::new();
+    // UI
+    let mut app_session_state = SessionState::new();
 
-    '_main_loop: while state.running {
-        let time = state.link.clock_micros();
-
-        state.link.capture_app_session_state(&mut session_state);
-
+    '_UI_loop: while running.load(Ordering::Acquire) {
+        link.capture_app_session_state(&mut app_session_state);
         print_state(
-            time,
-            session_state,
-            state.link.is_enabled(),
-            state.link.num_peers(),
-            state.audio_thread.engine.quantum(),
-            state.audio_thread.engine.isStartStopSyncEnabled(),
+            link.clock_micros(),
+            app_session_state,
+            link.is_enabled(),
+            link.num_peers(),
+            audio_platform.get_quantum(),
+            link.is_start_stop_sync_enabled(),
         );
-
         std::thread::sleep(Duration::from_millis(10));
     }
 
+    // Exit App
     input_thread.join();
-}
-
-pub struct State {
-    pub link: AblLink,
-    pub running: bool,
-    pub audio_thread: AudioThread,
-}
-
-impl State {
-    pub fn new(input_rx: Receiver<InputCommand>) -> Self {
-        let link = AblLink::new(120.);
-
-        Self {
-            link,
-            running: true,
-            audio_thread: AudioThread::new(&mut link, input_rx),
-        }
-    }
 }
 
 fn print_state(
@@ -145,7 +136,7 @@ pub enum InputCommand {
     TogglePlaying,
 }
 
-fn poll_input(tx: Sender<InputCommand>) {
+fn poll_input(tx: Sender<InputCommand>, running: Arc<AtomicBool>) {
     terminal::enable_raw_mode().unwrap();
     'input_loop: loop {
         if let Event::Key(event) = read().expect("Input read error") {
@@ -159,6 +150,7 @@ fn poll_input(tx: Sender<InputCommand>) {
                 KeyCode::Char(' ') => tx.send(InputCommand::TogglePlaying).unwrap(),
                 KeyCode::Char('q') => {
                     tx.send(InputCommand::Quit).unwrap();
+                    running.store(false, Ordering::Release);
                     break 'input_loop;
                 }
                 _ => {}
