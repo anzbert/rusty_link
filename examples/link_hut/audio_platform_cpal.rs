@@ -1,8 +1,6 @@
-use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::traits::{DeviceTrait, HostTrait};
 use cpal::{BufferSize, Device, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig};
 use cpal::{Stream, StreamConfig};
-
-use crate::mono_sine::MonoSine;
 
 const BUFFER_SIZE: u32 = 512;
 

@@ -25,8 +25,6 @@ use crate::{audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal};
 mod audio_engine;
 mod audio_platform_cpal;
 
-mod mono_sine;
-
 #[macro_use]
 extern crate lazy_static;
 lazy_static! {
