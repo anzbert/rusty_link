@@ -31,7 +31,7 @@ impl AudioPlatformCpal {
 
         let mut config = first_supported_config.config();
         config.buffer_size = BufferSize::Fixed(BUFFER_SIZE);
-        config.channels = 1;
+        // config.channels = 1;
 
         println!("SAMPLE RATE: {}", config.sample_rate.0);
 
@@ -103,15 +103,16 @@ impl AudioPlatformCpal {
                 engine_callback(buffer_size, output_latency as i64, sample_time_micros);
 
             // send buffer with same sound on all channels (equals mono output) to output
-            // for s in 0..data.len() / config.channels as usize {
-            //     for c in 0..config.channels as usize {
-            //         data[s * config.channels as usize + c] = Sample::from(&buffer[s]);
-            //     }
-            // }
-
-            for s in 0..data.len() {
-                data[s] = Sample::from(&buffer[s]);
+            for s in 0..data.len() / config.channels as usize {
+                for c in 0..config.channels as usize {
+                    data[s * config.channels as usize + c] = Sample::from(&buffer[s]);
+                }
             }
+
+            // for 1 channel test:
+            // for s in 0..data.len() {
+            //     data[s] = Sample::from(&buffer[s]);
+            // }
         };
         return data_fn;
     }
