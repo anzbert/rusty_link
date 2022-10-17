@@ -24,8 +24,14 @@ use crate::audio_engine::AudioEngine;
 
 mod audio_engine;
 mod audio_platform_cpal;
-mod constants;
-mod synth;
+
+mod mono_sine;
+
+#[macro_use]
+extern crate lazy_static;
+lazy_static! {
+    static ref ABL_LINK: AblLink = AblLink::new(120.);
+}
 
 fn main() {
     println!("\n\n < L I N K  H U T >\n");
@@ -51,8 +57,8 @@ fn main() {
     });
 
     // Init Main State
-    let link = AblLink::new(120.);
-    let audio_platform = AudioEngine::new(&link, input_rx);
+    // let link: AblLink = AblLink::new(120.);
+    let audio_platform = AudioEngine::new(&ABL_LINK, input_rx);
 
     // UI
     let mut app_session_state = SessionState::new();

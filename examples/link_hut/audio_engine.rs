@@ -1,29 +1,46 @@
-use crate::{audio_platform_cpal::AudioPlatformCpal, InputCommand};
+use crate::{audio_platform_cpal::AudioPlatformCpal, mono_sine::MonoSine, InputCommand};
 use cpal::Stream;
 use rusty_link::{AblLink, SessionState};
 use std::sync::mpsc::Receiver;
 
-pub struct AudioEngine<'a> {
+pub const LOW_TONE: f32 = 261.63; // C
+pub const HIGH_TONE: f32 = 392.00; // G
+pub const CLICK_DURATION: u64 = 100_000; // 100 ms click duration in micros
+
+pub struct AudioEngine {
     input: Receiver<InputCommand>,
-    pub link: &'a AblLink,
+    pub link: &'static AblLink,
     engine_data: EngineData,
     pub quantum: f64,
     audio_platorm: AudioPlatformCpal,
     stream: Stream,
 }
 
-impl<'a> AudioEngine<'a> {
-    pub fn new(link: &'a AblLink, input: Receiver<InputCommand>) -> Self {
+impl AudioEngine {
+    pub fn new(link: &'static AblLink, input: Receiver<InputCommand>) -> Self {
         let audio_cpal = AudioPlatformCpal::new();
 
-        let audio_session_state = SessionState::new();
+        let mut audio_session_state = SessionState::new();
 
-        let mut engine_callback = move || {};
+        let mut low_sine = MonoSine::new(audio_cpal.config.sample_rate.0, LOW_TONE);
+        let mut high_sine = MonoSine::new(audio_cpal.config.sample_rate.0, HIGH_TONE);
 
-        let audio_callback =
+        let mut engine_callback = move |buffer_size: u64, latency_in_samples: u64| {
+            // handle audio session state:
+            // let engineData = pullEngineData();
+            // let audio_session_state = link.capture_audio_session_state(&mut audio_session_state);
+
+            // build a latency compensated buffer:
+
+            let mut buffer: Vec<f32> = Vec::new();
+
+            buffer
+        };
+
+        let stream_callback =
             AudioPlatformCpal::build_callback::<f32>(audio_cpal.config.clone(), engine_callback);
 
-        let stream = audio_cpal.build_stream(audio_callback);
+        let stream = audio_cpal.build_stream(stream_callback);
 
         Self {
             link,
