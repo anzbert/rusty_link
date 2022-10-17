@@ -35,7 +35,7 @@ impl AudioPlatformCpal {
 
         println!(
             "DEVICE NAME: {}",
-            device.name().expect("Could not get device name. ")
+            device.name().expect("Could not get device name. "),
         );
 
         println!(
@@ -43,6 +43,13 @@ impl AudioPlatformCpal {
             BUFFER_SIZE,
             BUFFER_SIZE as f64 * 1000. / config.sample_rate.0 as f64
         );
+
+        let channel_cfg = match config.channels {
+            1 => " (Mono)",
+            2 => " (Stereo)",
+            _ => "",
+        };
+        println!("OUTPUT CHANNELS: {}{}", config.channels, channel_cfg);
 
         // println!("OUTPUT DEVICE LATENCY: {}", todo!());
 

@@ -3,8 +3,9 @@ use cpal::Stream;
 use rusty_link::{AblLink, SessionState};
 use std::{f32::consts::PI, sync::mpsc::Receiver};
 
-const HIGH_TONE: f32 = 1567.98;
-const LOW_TONE: f32 = 1108.73;
+// https://pages.mtu.edu/~suits/notefreqs.html
+const HIGH_TONE: f32 = 1567.98; // G6
+const LOW_TONE: f32 = 1108.73; // C#6
 
 pub const CLICK_DURATION: i64 = 100_000; // 100 ms click duration in micros
 
@@ -26,9 +27,6 @@ impl AudioEngine {
         let mut time_at_last_click = 0.;
 
         let mut audio_session_state = SessionState::new();
-
-        // let mut low_sine = MonoSine::new(audio_cpal.config.sample_rate.0, LOW_TONE);
-        // let mut high_sine = MonoSine::new(audio_cpal.config.sample_rate.0, HIGH_TONE);
 
         let engine_callback =
             move |buffer_size: usize, output_latency: i64, sample_time_micros: f64| {

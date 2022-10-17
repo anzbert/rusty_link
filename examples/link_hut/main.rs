@@ -148,7 +148,10 @@ fn poll_input(tx: Sender<InputCommand>, running: Arc<AtomicBool>) {
     'input_loop: loop {
         if let Event::Key(event) = read().expect("Input read error") {
             match event.code {
-                KeyCode::Char('a') => tx.send(InputCommand::ToggleEnable).unwrap(),
+                KeyCode::Char('a') => {
+                    // tx.send(InputCommand::ToggleEnable).unwrap();
+                    ABL_LINK.enable(!ABL_LINK.is_enabled());
+                }
                 KeyCode::Char('w') => tx.send(InputCommand::TempoMinus).unwrap(),
                 KeyCode::Char('e') => tx.send(InputCommand::TempoPlus).unwrap(),
                 KeyCode::Char('r') => tx.send(InputCommand::QuantumMinus).unwrap(),

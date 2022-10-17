@@ -6,28 +6,16 @@ fn main() {
     // - CMAKE -
     // ---------
 
-    // Get cmake config from 'cmake/CMakeLists.txt', build and return $OUT_DIR
-    let out_dir = cmake::Config::new("cmake")
-        .build_target("lib_abl_link_c")
-        .build();
+    // Get cmake config from 'cmake/CMakeLists.txt', build and return '$OUT_DIR'
+    let out_dir = cmake::Config::new("cmake").build();
 
-    // WINDOWS: Builds into $OUT_DIR/build/{Debug, Release, ...}
-    #[cfg(target_os = "windows")]
-    let build_dir = out_dir
-        .join("build")
-        .join(cmake::Config::new("cmake").get_profile());
-
-    // NON-WINDOWS: Builds into $OUT_DIR/build
-    #[cfg(not(target_os = "windows"))]
-    let build_dir = out_dir.join("build");
-
-    // MACOS: Link standard C++ lib
+    // Needs linking of standard C++ Lib on MacOS
     #[cfg(target_os = "macos")]
     println!("cargo:rustc-link-lib=c++");
 
-    // Statically link finished cmake build into executable
-    println!("cargo:rustc-link-search=native={}", build_dir.display());
-    println!("cargo:rustc-link-lib=static=lib_abl_link_c");
+    // Statically link finished cmake build into executable from '$OUT_DIR/lib'
+    println!("cargo:rustc-link-search=native={}/lib", out_dir.display());
+    println!("cargo:rustc-link-lib=static=lib_abl_link");
 
     // -----------
     // - BINDGEN -

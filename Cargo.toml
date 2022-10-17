@@ -14,10 +14,10 @@ categories = ["api-bindings"]
 [dependencies]
 
 [dev-dependencies]
-lazy_static = "*"
-crossterm = "^0.25.0" # Used in examples
-cpal = "^0.14.0"      # Used in 'link_hut' example with sound (under development)
+lazy_static = "^1.4.0"
+crossterm = "^0.25.0"  # Used in examples
+cpal = "^0.14.0"       # Used in 'link_hut' example with sound (under development)
 
 [build-dependencies]
 cmake = "^0.1.48"
-bindgen = "^0.60.1"
+bindgen = "^0.61.0"
