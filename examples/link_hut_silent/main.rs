@@ -171,7 +171,8 @@ fn main() {
         print_state(&mut state);
     }
 
-    terminal::disable_raw_mode().unwrap();
-
     state.link.enable(false);
+
+    terminal::disable_raw_mode().unwrap();
+    println!("\n");
 }

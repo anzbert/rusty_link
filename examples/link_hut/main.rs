@@ -20,7 +20,7 @@ use std::{
     time::Duration,
 };
 
-use crate::audio_engine::AudioEngine;
+use crate::{audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal};
 
 mod audio_engine;
 mod audio_platform_cpal;
@@ -34,7 +34,9 @@ lazy_static! {
 }
 
 fn main() {
-    println!("\n\n < L I N K  H U T >\n");
+    let audio_platform = AudioPlatformCpal::new();
+
+    println!("\n < L I N K  H U T >\n");
 
     println!("usage:");
     println!("  enable / disable Link: a");
@@ -45,7 +47,6 @@ fn main() {
     println!("  quit: q");
 
     println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
-
     // App running:
     let running = Arc::new(AtomicBool::new(true));
     let running_clone1 = Arc::clone(&running);
@@ -58,22 +59,22 @@ fn main() {
 
     // Init Main State
     // let link: AblLink = AblLink::new(120.);
-    let audio_platform = AudioEngine::new(&ABL_LINK, input_rx);
+    let audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx);
 
     // UI
     let mut app_session_state = SessionState::new();
 
     '_UI_loop: while running.load(Ordering::Acquire) {
-        audio_platform
+        audio_engine
             .link
             .capture_app_session_state(&mut app_session_state);
         print_state(
-            audio_platform.link.clock_micros(),
+            audio_engine.link.clock_micros(),
             &app_session_state,
-            audio_platform.link.is_enabled(),
-            audio_platform.link.num_peers(),
-            audio_platform.quantum,
-            audio_platform.link.is_start_stop_sync_enabled(),
+            audio_engine.link.is_enabled(),
+            audio_engine.link.num_peers(),
+            audio_engine.quantum,
+            audio_engine.link.is_start_stop_sync_enabled(),
         );
         std::thread::sleep(Duration::from_millis(10));
     }
@@ -166,4 +167,5 @@ fn poll_input(tx: Sender<InputCommand>, running: Arc<AtomicBool>) {
         }
     }
     terminal::disable_raw_mode().unwrap();
+    println!("\n");
 }

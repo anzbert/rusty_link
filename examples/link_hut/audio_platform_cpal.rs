@@ -1,6 +1,10 @@
-use cpal::traits::{DeviceTrait, HostTrait};
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{BufferSize, Device, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig};
 use cpal::{Stream, StreamConfig};
+
+use crate::mono_sine::MonoSine;
+
+const BUFFER_SIZE: u32 = 512;
 
 pub struct AudioPlatformCpal {
     device: Device,
@@ -26,8 +30,23 @@ impl AudioPlatformCpal {
             .with_max_sample_rate();
 
         let mut config = first_supported_config.config();
-        config.buffer_size = BufferSize::Fixed(511);
-        // config.channels = 2;
+        config.buffer_size = BufferSize::Fixed(BUFFER_SIZE);
+        config.channels = 1;
+
+        println!("SAMPLE RATE: {}", config.sample_rate.0);
+
+        println!(
+            "DEVICE NAME: {}",
+            device.name().expect("Could not get device name. ")
+        );
+
+        println!(
+            "BUFFER SIZE: {} samples, {:.2} ms",
+            BUFFER_SIZE,
+            BUFFER_SIZE as f64 * 1000. / config.sample_rate.0 as f64
+        );
+
+        // println!("OUTPUT DEVICE LATENCY: {}", todo!());
 
         Self {
             device,
@@ -55,14 +74,14 @@ impl AudioPlatformCpal {
         }
         .unwrap();
 
-        // stream.pause().unwrap();
+        // stream.play().unwrap();
+
         stream
     }
 
-    // not sure if this should be here?!
     pub fn build_callback<T: Sample>(
         config: StreamConfig,
-        mut engine_callback: (impl FnMut(u64, u64) -> Vec<f32> + Send + 'static),
+        mut engine_callback: (impl FnMut(usize, i64, f64) -> Vec<f32> + Send + 'static),
     ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
         let data_fn = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
             // output latency in micros
@@ -74,30 +93,26 @@ impl AudioPlatformCpal {
                 .as_micros();
 
             // size of output buffer in samples
-            let buffer_size: u64 = data.len() as u64 / config.channels as u64;
+            let buffer_size: usize = data.len() / config.channels as usize;
 
             // sample time in micros per sample at the current sample rate
             let sample_time_micros: f64 = 1_000_000. / config.sample_rate.0 as f64;
 
-            // output latency in samples
-            let latency_in_samples = (output_latency as f64 / sample_time_micros) as u64;
-
             // invoke callback which builds a latency compensated buffer and handles link audio sessionstate
-            let buffer: Vec<f32> = engine_callback(buffer_size, latency_in_samples);
+            let buffer: Vec<f32> =
+                engine_callback(buffer_size, output_latency as i64, sample_time_micros);
 
             // send buffer with same sound on all channels (equals mono output) to output
-            for s in 0..data.len() / config.channels as usize {
-                for c in 0..config.channels as usize {
-                    data[s * 2 + c] = Sample::from(&buffer[s]);
-                }
+            // for s in 0..data.len() / config.channels as usize {
+            //     for c in 0..config.channels as usize {
+            //         data[s * config.channels as usize + c] = Sample::from(&buffer[s]);
+            //     }
+            // }
+
+            for s in 0..data.len() {
+                data[s] = Sample::from(&buffer[s]);
             }
         };
         return data_fn;
     }
 }
-
-// pub fn write_silence<T: Sample>(data: &mut [T], _: &cpal::OutputCallbackInfo) {
-//     for sample in data.iter_mut() {
-//         *sample = Sample::from(&0.0);
-//     }
-// }
