@@ -1,4 +1,4 @@
-use crate::{audio_platform_cpal::AudioPlatformCpal, UpdateSessionState};
+use crate::{audio_platform_cpal::AudioPlatformCpal, input_thread::UpdateSessionState};
 use cpal::Stream;
 use rusty_link::{AblLink, SessionState};
 use std::{
@@ -6,13 +6,12 @@ use std::{
     sync::{mpsc::Receiver, Arc, Mutex},
 };
 
-// https://pages.mtu.edu/~suits/notefreqs.html
-const HIGH_TONE: f32 = 1567.98; // G6
-const LOW_TONE: f32 = 1108.73; // C#6
-const CLICK_DURATION: i64 = 100_000; // Click duration in micros
+const HIGH_TONE: f32 = 1567.98; // G
+const LOW_TONE: f32 = 1108.73; // C#
+const CLICK_DURATION: i64 = 100_000; // in microseconds
 
 pub struct AudioEngine {
-    pub stream: Stream,
+    pub stream: Option<Stream>,
 }
 
 impl AudioEngine {
@@ -22,13 +21,11 @@ impl AudioEngine {
         input: Receiver<UpdateSessionState>,
         quantum: Arc<Mutex<f64>>,
     ) -> Self {
-        // Working variables for callback:
         let mut time_at_last_click = 0;
         let mut synth_clock: u32 = 0;
         let mut audio_session_state = SessionState::new();
         let mut last_known_quantum = *quantum.lock().unwrap();
 
-        // Build callback:
         let engine_callback = move |buffer_size: usize,
                                     output_latency: u64,
                                     sample_time_micros: f64,
@@ -72,14 +69,13 @@ impl AudioEngine {
                 }
             }
 
-            // ----  BUILD LATENCY COMPENSATED BUFFER & SYNTH SOUND ----
-
+            // ----  BUILD LATENCY COMPENSATED BUFFER WITH SYNTH SOUND ----
             let mut buffer: Vec<f32> = Vec::with_capacity(buffer_size);
 
             let begin_time = link.clock_micros() + output_latency as i64;
 
             for sample in 0..buffer_size {
-                let mut y_amplitude: f32 = 0.;
+                let mut y_amplitude: f32 = 0.; // Default is silent
 
                 // Compute the host time for this sample and the last.
                 let host_time = begin_time + (sample_time_micros * sample as f64).round() as i64;
@@ -94,7 +90,7 @@ impl AudioEngine {
                     if audio_session_state.phase_at_time(host_time, 1.0)
                         < audio_session_state.phase_at_time(last_sample_host_time, 1.0)
                     {
-                        time_at_last_click = host_time;
+                        time_at_last_click = host_time; // reset last click time
                         synth_clock = 0; // reset synth clock
                     }
 
@@ -107,7 +103,6 @@ impl AudioEngine {
                         // quantum was zero, then it was at a quantum boundary and we
                         // want to use the high tone. For other beats within the
                         // quantum, use the low tone.
-                        // dbg!(last_known_quantum);
                         let freq = match audio_session_state
                             .phase_at_time(host_time, last_known_quantum)
                             .floor() as usize
@@ -122,26 +117,22 @@ impl AudioEngine {
                         y_amplitude =
                             (x_time * freq * TAU).cos() * (1. - (x_time * 2.5 * TAU).sin());
 
-                        // For testing, sine synth:
+                        // Simple sine synth:
                         // y_amplitude = (x_time * freq * TAU).sin();
 
                         synth_clock = (synth_clock + 1) % sample_rate;
                     }
                 }
                 buffer.push(y_amplitude);
-
-                // For testing, constant sine synth:
-                // buffer.push(((synth_clock as f32 / 48000.) as f32 * 440. * TAU).sin());
             }
-
             buffer
         };
 
-        let stream_callback =
-            AudioPlatformCpal::build_callback::<f32>(audio_cpal.config.clone(), engine_callback);
+        // BUILD AUDIO STREAM AND START
+        let stream = audio_cpal.build_stream::<f32>(engine_callback);
 
-        let stream = audio_cpal.build_stream(stream_callback);
-
-        Self { stream }
+        Self {
+            stream: Some(stream),
+        }
     }
 }

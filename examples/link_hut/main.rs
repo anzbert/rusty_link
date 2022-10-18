@@ -1,22 +1,17 @@
-// This example is a Rust port of 'link_hut' (written in C++ / with audio thread).
+// This example is a Rust port of 'LinkHut' (original written in C++) with audio support.
 // Source: https://github.com/Ableton/link/tree/master/examples
 
-use crate::{audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal};
-use cpal::traits::StreamTrait;
-use crossterm::{
-    cursor,
-    event::{read, Event, KeyCode},
-    queue,
-    style::Print,
-    terminal,
+use crate::{
+    audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal,
+    input_thread::UpdateSessionState,
 };
+use crossterm::{cursor, queue, style::Print, terminal};
 use rusty_link::{AblLink, SessionState};
 use std::{
     io::{self, Write},
     sync::{
         atomic::{AtomicBool, Ordering},
-        mpsc::{self, Sender},
-        Arc, Mutex,
+        mpsc, Arc, Mutex,
     },
     thread,
     time::Duration,
@@ -24,6 +19,7 @@ use std::{
 
 mod audio_engine;
 mod audio_platform_cpal;
+mod input_thread;
 
 #[macro_use]
 extern crate lazy_static;
@@ -45,7 +41,8 @@ fn main() {
     println!("  quit: q");
 
     println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
-    // App running:
+
+    // Multithread State:
     let running = Arc::new(AtomicBool::new(true));
     let running_clone1 = Arc::clone(&running);
 
@@ -53,20 +50,18 @@ fn main() {
     let quantum_clone1 = Arc::clone(&quantum);
     let quantum_clone2 = Arc::clone(&quantum);
 
-    // Init Input Thread:
+    // Input Thread:
     let (input_tx, input_rx) = mpsc::channel::<UpdateSessionState>();
     let input_thread = thread::spawn(move || {
-        poll_input(input_tx, running_clone1, &ABL_LINK, quantum_clone1);
+        input_thread::poll_input(input_tx, running_clone1, &ABL_LINK, quantum_clone1);
     });
 
-    // Init Main State
-    // let link: AblLink = AblLink::new(120.);
-    let audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx, quantum_clone2);
+    // Audio Engine
+    let _audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx, quantum_clone2);
 
     // UI
     let mut app_session_state = SessionState::new();
-
-    '_UI_loop: while running.load(Ordering::Acquire) {
+    '_UI_thread_loop: while running.load(Ordering::Acquire) {
         ABL_LINK.capture_app_session_state(&mut app_session_state);
         print_state(
             ABL_LINK.clock_micros(),
@@ -76,57 +71,12 @@ fn main() {
             *quantum.lock().unwrap(),
             ABL_LINK.is_start_stop_sync_enabled(),
         );
-        std::thread::sleep(Duration::from_millis(10));
+        std::thread::sleep(Duration::from_millis(16));
     }
 
-    // Exit App
-    audio_engine.stream.pause().unwrap();
+    // Exit
     input_thread.join().unwrap();
-}
-
-pub enum UpdateSessionState {
-    TempoPlus,
-    TempoMinus,
-    TogglePlaying,
-}
-
-fn poll_input(
-    tx: Sender<UpdateSessionState>,
-    running: Arc<AtomicBool>,
-    link: &AblLink,
-    quantum: Arc<Mutex<f64>>,
-) {
-    terminal::enable_raw_mode().unwrap();
-    'input_loop: loop {
-        if let Event::Key(event) = read().expect("Input read error") {
-            match event.code {
-                KeyCode::Char('w') => tx.send(UpdateSessionState::TempoMinus).unwrap(),
-                KeyCode::Char('e') => tx.send(UpdateSessionState::TempoPlus).unwrap(),
-                KeyCode::Char(' ') => tx.send(UpdateSessionState::TogglePlaying).unwrap(),
-                KeyCode::Char('a') => {
-                    link.enable(!link.is_enabled());
-                }
-                KeyCode::Char('r') => {
-                    let mut q = quantum.lock().unwrap();
-                    *q = (*q - 1.).max(1.);
-                }
-                KeyCode::Char('t') => {
-                    let mut q = quantum.lock().unwrap();
-                    *q = (*q + 1.).min(16.);
-                }
-                KeyCode::Char('s') => {
-                    link.enable_start_stop_sync(!link.is_start_stop_sync_enabled());
-                }
-                KeyCode::Char('q') => {
-                    running.store(false, Ordering::Release);
-                    break 'input_loop;
-                }
-                _ => {}
-            }
-        }
-    }
-    terminal::disable_raw_mode().unwrap();
-    println!("\n");
+    ABL_LINK.enable(false);
 }
 
 fn print_state(

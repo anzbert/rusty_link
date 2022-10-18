@@ -5,8 +5,8 @@ use cpal::{Stream, StreamConfig};
 const BUFFER_SIZE: u32 = 512;
 
 pub struct AudioPlatformCpal {
+    config: StreamConfig,
     device: Device,
-    pub config: StreamConfig,
     supported_config: SupportedStreamConfig,
 }
 
@@ -64,10 +64,51 @@ impl AudioPlatformCpal {
         }
     }
 
+    fn build_cpal_callback<T: Sample>(
+        &self,
+        mut engine_callback: (impl FnMut(usize, u64, f64, u32) -> Vec<f32> + Send + 'static),
+    ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
+        let config_clone = self.config.clone();
+
+        let data_fn = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
+            // output latency in micros
+            let output_latency = info
+                .timestamp()
+                .playback
+                .duration_since(&info.timestamp().callback)
+                .unwrap_or_default()
+                .as_micros() as u64;
+
+            // size of output buffer in samples
+            let buffer_size: usize = data.len() / config_clone.channels as usize;
+
+            // sample time in micros per sample at the current sample rate
+            let sample_time_micros: f64 = 1_000_000. / config_clone.sample_rate.0 as f64;
+
+            // invoke callback which builds a latency compensated buffer and handles link audio sessionstate
+            let buffer: Vec<f32> = engine_callback(
+                buffer_size,
+                output_latency,
+                sample_time_micros,
+                config_clone.sample_rate.0,
+            );
+
+            // send buffer with same sound on all channels (equals mono output) to output
+            for s in 0..data.len() / config_clone.channels as usize {
+                for c in 0..config_clone.channels as usize {
+                    data[s * config_clone.channels as usize + c] = Sample::from(&buffer[s]);
+                }
+            }
+        };
+        return data_fn;
+    }
+
     pub fn build_stream<T: Sample>(
         &self,
-        callback: impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static,
+        engine_callback: (impl FnMut(usize, u64, f64, u32) -> Vec<f32> + Send + 'static),
     ) -> Stream {
+        let callback = self.build_cpal_callback::<f32>(engine_callback);
+
         let err_fn = |err| eprintln!("An error occurred on the output audio stream: {}", err);
 
         let stream = match self.supported_config.sample_format() {
@@ -86,42 +127,5 @@ impl AudioPlatformCpal {
         stream.play().unwrap();
 
         stream
-    }
-
-    pub fn build_callback<T: Sample>(
-        config: StreamConfig,
-        mut engine_callback: (impl FnMut(usize, u64, f64, u32) -> Vec<f32> + Send + 'static),
-    ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
-        let data_fn = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
-            // output latency in micros
-            let output_latency = info
-                .timestamp()
-                .playback
-                .duration_since(&info.timestamp().callback)
-                .unwrap_or_default()
-                .as_micros() as u64;
-
-            // size of output buffer in samples
-            let buffer_size: usize = data.len() / config.channels as usize;
-
-            // sample time in micros per sample at the current sample rate
-            let sample_time_micros: f64 = 1_000_000. / config.sample_rate.0 as f64;
-
-            // invoke callback which builds a latency compensated buffer and handles link audio sessionstate
-            let buffer: Vec<f32> = engine_callback(
-                buffer_size,
-                output_latency,
-                sample_time_micros,
-                config.sample_rate.0,
-            );
-
-            // send buffer with same sound on all channels (equals mono output) to output
-            for s in 0..data.len() / config.channels as usize {
-                for c in 0..config.channels as usize {
-                    data[s * config.channels as usize + c] = Sample::from(&buffer[s]);
-                }
-            }
-        };
-        return data_fn;
     }
 }

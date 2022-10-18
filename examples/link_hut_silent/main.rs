@@ -24,7 +24,7 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         Self {
-            link: AblLink::new(100.),
+            link: AblLink::new(120.),
             session_state: SessionState::new(),
             running: true,
             quantum: 4.,
