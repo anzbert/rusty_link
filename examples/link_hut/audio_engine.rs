@@ -25,7 +25,8 @@ impl AudioEngine {
         let mut synth_clock: u32 = 0;
         let mut audio_session_state = SessionState::new();
         let mut last_known_quantum = *quantum.lock().unwrap();
-        let mut last_begin_time = 0;
+        let mut last_host_time = 0;
+        let mut invoke_counter = 0;
 
         let engine_callback = move |buffer_size: usize,
                                     output_latency: u64,
@@ -74,6 +75,8 @@ impl AudioEngine {
 
             let begin_time = invoke_time + output_latency as i64;
 
+            invoke_counter += 1;
+
             for sample in 0..buffer_size {
                 if !audio_session_state.is_playing() {
                     buffer.push(0.);
@@ -84,11 +87,20 @@ impl AudioEngine {
 
                 // Compute the host time for this sample and the last.
                 let host_time = begin_time + (sample_time_micros * sample as f64) as i64;
-                if host_time < last_begin_time {
-                    println!("h {} / l {}", host_time, last_begin_time);
-                }
-                last_begin_time = host_time;
                 let last_sample_host_time = host_time - (sample_time_micros) as i64;
+
+                if host_time < last_host_time {
+                    println!(
+                        "inv {}, h {} / l {} / diff {} / s {} / samp_time {}",
+                        invoke_counter,
+                        host_time,
+                        last_host_time,
+                        last_host_time - host_time,
+                        sample,
+                        sample_time_micros
+                    );
+                }
+                last_host_time = host_time;
 
                 // Only make sound for positive beat magnitudes. Negative beat
                 // magnitudes are count-in beats.
