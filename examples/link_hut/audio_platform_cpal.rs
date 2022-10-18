@@ -1,8 +1,10 @@
-use cpal::traits::{DeviceTrait, HostTrait};
+use std::borrow::Borrow;
+
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{BufferSize, Device, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig};
 use cpal::{Stream, StreamConfig};
 
-const BUFFER_SIZE: u32 = 512;
+const BUFFER_SIZE: u32 = 1024;
 
 pub struct AudioPlatformCpal {
     device: Device,
@@ -31,7 +33,11 @@ impl AudioPlatformCpal {
         config.buffer_size = BufferSize::Fixed(BUFFER_SIZE);
         // config.channels = 1;
 
-        println!("SAMPLE RATE: {}", config.sample_rate.0);
+        println!(
+            "SAMPLE RATE: {} ({:?})",
+            config.sample_rate.0,
+            first_supported_config.sample_format()
+        );
 
         println!(
             "DEVICE NAME: {}",
@@ -39,9 +45,10 @@ impl AudioPlatformCpal {
         );
 
         println!(
-            "BUFFER SIZE: {} samples, {:.2} ms",
+            "BUFFER SIZE: {} samples, {:.2} ms (Supported {:?})",
             BUFFER_SIZE,
-            BUFFER_SIZE as f64 * 1000. / config.sample_rate.0 as f64
+            BUFFER_SIZE as f64 * 1000. / config.sample_rate.0 as f64,
+            first_supported_config.buffer_size()
         );
 
         let channel_cfg = match config.channels {
@@ -51,7 +58,7 @@ impl AudioPlatformCpal {
         };
         println!("OUTPUT CHANNELS: {}{}", config.channels, channel_cfg);
 
-        // println!("OUTPUT DEVICE LATENCY: {}", todo!());
+        // println!("OUTPUT DEVICE LATENCY: {}", todo!()); // not available in cpal
 
         Self {
             device,
@@ -79,14 +86,14 @@ impl AudioPlatformCpal {
         }
         .unwrap();
 
-        // stream.play().unwrap();
+        stream.play().unwrap();
 
         stream
     }
 
     pub fn build_callback<T: Sample>(
         config: StreamConfig,
-        mut engine_callback: (impl FnMut(usize, i64, f64) -> Vec<f32> + Send + 'static),
+        mut engine_callback: (impl FnMut(usize, i64, f64, u32) -> Vec<f32> + Send + 'static),
     ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
         let data_fn = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
             // output latency in micros
@@ -104,8 +111,12 @@ impl AudioPlatformCpal {
             let sample_time_micros: f64 = 1_000_000. / config.sample_rate.0 as f64;
 
             // invoke callback which builds a latency compensated buffer and handles link audio sessionstate
-            let buffer: Vec<f32> =
-                engine_callback(buffer_size, output_latency as i64, sample_time_micros);
+            let buffer: Vec<f32> = engine_callback(
+                buffer_size,
+                output_latency as i64,
+                sample_time_micros,
+                config.sample_rate.0,
+            );
 
             // send buffer with same sound on all channels (equals mono output) to output
             for s in 0..data.len() / config.channels as usize {
@@ -114,7 +125,7 @@ impl AudioPlatformCpal {
                 }
             }
 
-            // for 1 channel test:
+            // For 1 channel test:
             // for s in 0..data.len() {
             //     data[s] = Sample::from(&buffer[s]);
             // }

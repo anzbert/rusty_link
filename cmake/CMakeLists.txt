@@ -10,7 +10,10 @@ include(../link/extensions/abl_link/abl_link.cmake)
 
 target_link_libraries(lib_abl_link abl_link)
 
-# CMAKE_INSTALL_PREFIX in CMake is referencing the same directory as $OUT_DIR in Cargo / Rust.
-# This copies the compiled library to '$OUT_DIR/lib':
+# $"CMAKE_INSTALL_PREFIX}", or "." should reference the same directory as $OUT_DIR in Cargo / Rust.
+# This install command copies the compiled library to '$OUT_DIR/lib':
+
+# install(TARGETS lib_abl_link 
+#         DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 install(TARGETS lib_abl_link 
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+        DESTINATION "./lib")
