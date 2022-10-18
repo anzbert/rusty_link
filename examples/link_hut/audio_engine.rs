@@ -25,11 +25,14 @@ impl AudioEngine {
         let mut synth_clock: u32 = 0;
         let mut audio_session_state = SessionState::new();
         let mut last_known_quantum = *quantum.lock().unwrap();
+        let mut last_begin_time = 0;
 
         let engine_callback = move |buffer_size: usize,
                                     output_latency: u64,
                                     sample_time_micros: f64,
                                     sample_rate: u32| {
+            let invoke_time = link.clock_micros();
+
             // ---- HANDLE AUDIO SESSION STATE ----
             link.capture_audio_session_state(&mut audio_session_state);
 
@@ -40,26 +43,22 @@ impl AudioEngine {
             if let Ok(command) = input.try_recv() {
                 match command {
                     UpdateSessionState::TempoPlus => {
-                        audio_session_state.set_tempo(
-                            (audio_session_state.tempo() + 1.).min(999.),
-                            link.clock_micros(),
-                        );
+                        audio_session_state
+                            .set_tempo((audio_session_state.tempo() + 1.).min(999.), invoke_time);
                         link.commit_audio_session_state(&audio_session_state);
                     }
                     UpdateSessionState::TempoMinus => {
-                        audio_session_state.set_tempo(
-                            (audio_session_state.tempo() - 1.).max(20.),
-                            link.clock_micros(),
-                        );
+                        audio_session_state
+                            .set_tempo((audio_session_state.tempo() - 1.).max(20.), invoke_time);
                         link.commit_audio_session_state(&audio_session_state);
                     }
                     UpdateSessionState::TogglePlaying => {
                         if audio_session_state.is_playing() {
-                            audio_session_state.set_is_playing(false, link.clock_micros() as u64);
+                            audio_session_state.set_is_playing(false, invoke_time as u64);
                         } else {
                             audio_session_state.set_is_playing_and_request_beat_at_time(
                                 true,
-                                link.clock_micros() as u64,
+                                invoke_time as u64,
                                 0.,
                                 last_known_quantum,
                             );
@@ -73,7 +72,7 @@ impl AudioEngine {
 
             let mut buffer: Vec<f32> = Vec::with_capacity(buffer_size);
 
-            let begin_time = link.clock_micros() + output_latency as i64;
+            let begin_time = invoke_time + output_latency as i64;
 
             for sample in 0..buffer_size {
                 if !audio_session_state.is_playing() {
@@ -84,8 +83,12 @@ impl AudioEngine {
                 let mut y_amplitude: f32 = 0.; // Default is silent
 
                 // Compute the host time for this sample and the last.
-                let host_time = begin_time + (sample_time_micros * sample as f64).round() as i64;
-                let last_sample_host_time = host_time - sample_time_micros.round() as i64;
+                let host_time = begin_time + (sample_time_micros * sample as f64) as i64;
+                if host_time < last_begin_time {
+                    println!("h {} / l {}", host_time, last_begin_time);
+                }
+                last_begin_time = host_time;
+                let last_sample_host_time = host_time - (sample_time_micros) as i64;
 
                 // Only make sound for positive beat magnitudes. Negative beat
                 // magnitudes are count-in beats.
