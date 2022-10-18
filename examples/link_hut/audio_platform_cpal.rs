@@ -90,7 +90,7 @@ impl AudioPlatformCpal {
 
     pub fn build_callback<T: Sample>(
         config: StreamConfig,
-        mut engine_callback: (impl FnMut(usize, i64, f64, u32) -> Vec<f32> + Send + 'static),
+        mut engine_callback: (impl FnMut(usize, u64, f64, u32) -> Vec<f32> + Send + 'static),
     ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
         let data_fn = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
             // output latency in micros
@@ -99,7 +99,7 @@ impl AudioPlatformCpal {
                 .playback
                 .duration_since(&info.timestamp().callback)
                 .unwrap_or_default()
-                .as_micros();
+                .as_micros() as u64;
 
             // size of output buffer in samples
             let buffer_size: usize = data.len() / config.channels as usize;
@@ -110,7 +110,7 @@ impl AudioPlatformCpal {
             // invoke callback which builds a latency compensated buffer and handles link audio sessionstate
             let buffer: Vec<f32> = engine_callback(
                 buffer_size,
-                output_latency as i64,
+                output_latency,
                 sample_time_micros,
                 config.sample_rate.0,
             );
