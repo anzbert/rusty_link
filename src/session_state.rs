@@ -29,7 +29,7 @@ impl Drop for SessionState {
 }
 
 impl SessionState {
-    /// Create a new session_state instance.
+    /// Create a new SessionState instance.
     ///
     ///  Thread-safe: yes
     ///

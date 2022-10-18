@@ -16,7 +16,7 @@ impl Drop for AblLink {
 }
 
 impl AblLink {
-    ///  Construct a new abl_link instance with an initial tempo.
+    ///  Construct a new AblLink instance with an initial tempo.
     ///
     ///  Thread-safe: yes
     ///
@@ -88,7 +88,7 @@ impl AblLink {
     ///  Realtime-safe: yes
     ///
     ///  This function should ONLY be called in the audio thread and must not be
-    ///  accessed from any other threads. After capturing the session_state holds a snapshot
+    ///  accessed from any other threads. After capturing the SessionState holds a snapshot
     ///  of the current Link Session State, so it should be used in a local scope. The
     ///  session_state should not be created on the audio thread.
     pub fn capture_audio_session_state(&self, session_state: &mut SessionState) {
@@ -128,7 +128,7 @@ impl AblLink {
     ///
     ///  Realtime-safe: no
     ///
-    ///  The given session_state will replace the current Link Session State.
+    ///  The given SessionState will replace the current Link Session State.
     ///  Modifications of the Session State will be communicated to other peers in the
     ///  session.
     pub fn commit_app_session_state(&self, session_state: &SessionState) {
