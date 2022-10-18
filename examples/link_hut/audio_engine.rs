@@ -1,44 +1,68 @@
-use crate::{audio_platform_cpal::AudioPlatformCpal, InputCommand};
+use crate::{audio_platform_cpal::AudioPlatformCpal, UpdateSessionState};
 use cpal::Stream;
 use rusty_link::{AblLink, SessionState};
-use std::{f32::consts::TAU, sync::mpsc::Receiver};
+use std::{
+    f32::consts::TAU,
+    sync::{mpsc::Receiver, Arc, Mutex},
+};
 
 // https://pages.mtu.edu/~suits/notefreqs.html
 const HIGH_TONE: f32 = 1567.98; // G6
 const LOW_TONE: f32 = 1108.73; // C#6
-
-pub const CLICK_DURATION: i64 = 100_000; // 100 ms click duration in micros
+const CLICK_DURATION: i64 = 100_000; // Click duration in micros
 
 pub struct AudioEngine {
-    input: Receiver<InputCommand>,
-    pub link: &'static AblLink,
-    engine_data: EngineData,
-    pub quantum: f64,
-    audio_platorm: AudioPlatformCpal,
-    stream: Stream,
+    pub stream: Stream,
 }
 
 impl AudioEngine {
     pub fn new(
         link: &'static AblLink,
         audio_cpal: AudioPlatformCpal,
-        input: Receiver<InputCommand>,
+        input: Receiver<UpdateSessionState>,
+        quantum: Arc<Mutex<f64>>,
     ) -> Self {
+        // Working variables for callback:
         let mut time_at_last_click = 0.;
         let mut synth_clock: u32 = 0;
         let mut audio_session_state = SessionState::new();
+        let mut last_known_quantum = *quantum.lock().unwrap();
 
+        // Build callback:
         let engine_callback = move |buffer_size: usize,
                                     output_latency: i64,
                                     sample_time_micros: f64,
                                     sample_rate: u32| {
-            // ---- handle audio session state ----
+            // ---- HANDLE AUDIO SESSION STATE ----
             link.capture_audio_session_state(&mut audio_session_state);
-            // let engine_data = pull_engine_data();
 
-            let quantum = 4.; // !!! temp value REMOVE !!!
+            if let Ok(q) = quantum.try_lock() {
+                last_known_quantum = *q
+            };
 
-            // ----  build a latency compensated buffer ----
+            if let Ok(command) = input.try_recv() {
+                match command {
+                    UpdateSessionState::TempoPlus => {
+                        audio_session_state.set_tempo(
+                            (audio_session_state.tempo() + 1.).min(999.),
+                            link.clock_micros(),
+                        );
+                        link.commit_audio_session_state(&audio_session_state);
+                    }
+                    UpdateSessionState::TempoMinus => {
+                        audio_session_state.set_tempo(
+                            (audio_session_state.tempo() - 1.).max(20.),
+                            link.clock_micros(),
+                        );
+                        link.commit_audio_session_state(&audio_session_state);
+                    }
+                    UpdateSessionState::TogglePlaying => {
+                        todo!();
+                    }
+                }
+            }
+
+            // ----  BUILD LATENCY COMPENSATED BUFFER & SYNTH SOUND ----
 
             let mut buffer: Vec<f32> = Vec::with_capacity(buffer_size);
 
@@ -53,7 +77,7 @@ impl AudioEngine {
 
                 // Only make sound for positive beat magnitudes. Negative beat
                 // magnitudes are count-in beats.
-                if audio_session_state.beat_at_time(host_time as i64, quantum) >= 0. {
+                if audio_session_state.beat_at_time(host_time as i64, last_known_quantum) >= 0. {
                     // If the phase wraps around between the last sample and the
                     // current one with respect to a 1 beat quantum, then a click
                     // should occur.
@@ -75,7 +99,7 @@ impl AudioEngine {
                         // quantum, use the low tone.
 
                         let freq = match audio_session_state
-                            .phase_at_time(host_time as i64, quantum)
+                            .phase_at_time(host_time as i64, last_known_quantum)
                             .floor() as usize
                         {
                             0 => HIGH_TONE,
@@ -86,7 +110,7 @@ impl AudioEngine {
 
                         // Simple cosine synth:
                         y_amplitude =
-                            (TAU * x_time * freq).cos() * (1. - (2.5 * TAU * x_time).sin());
+                            (x_time * freq * TAU).cos() * (1. - (x_time * 2.5 * TAU).sin());
 
                         // For testing, sine synth:
                         // y_amplitude = (x_time * freq * TAU).sin();
@@ -108,75 +132,6 @@ impl AudioEngine {
 
         let stream = audio_cpal.build_stream(stream_callback);
 
-        Self {
-            link,
-            input,
-            engine_data: EngineData { quantum: 4. },
-            quantum: 4.,
-            audio_platorm: audio_cpal,
-            stream,
-        }
+        Self { stream }
     }
-
-    // fn now(&self) -> i64 {
-    //     self.link.clock_micros()
-    // }
-
-    // pub fn start_playing(&mut self) {
-    //     let mut session_state = SessionState::new();
-    //     self.link.capture_app_session_state(&mut session_state);
-    //     session_state.set_is_playing_and_request_beat_at_time(
-    //         true,
-    //         self.now() as u64,
-    //         0.,
-    //         self.quantum,
-    //     );
-    //     self.link.commit_app_session_state(&session_state);
-    // }
-
-    // pub fn stop_playing(&mut self) {
-    //     let mut session_state = SessionState::new();
-    //     self.link.capture_app_session_state(&mut session_state);
-    //     session_state.set_is_playing(true, self.now() as u64);
-    //     self.link.commit_app_session_state(&session_state);
-    // }
-
-    // pub fn is_playing(&self) -> bool {
-    //     let mut session_state = SessionState::new();
-    //     self.link.capture_app_session_state(&mut session_state);
-    //     session_state.is_playing()
-    // }
-
-    // pub fn beat_time(&self) -> f64 {
-    //     let mut session_state = SessionState::new();
-    //     self.link.capture_app_session_state(&mut session_state);
-    //     session_state.beat_at_time(self.now(), self.quantum)
-    // }
-
-    // pub fn set_tempo(&mut self, tempo: f64) {
-    //     let mut session_state = SessionState::new();
-    //     self.link.capture_app_session_state(&mut session_state);
-    //     session_state.set_tempo(tempo, self.now());
-    //     self.link.commit_app_session_state(&session_state);
-    // }
-
-    // pub fn quantum(&self) -> f64 {
-    //     self.quantum
-    // }
-
-    // pub fn set_quantum(&mut self, quantum: f64) {
-    //     self.quantum = quantum;
-    // }
-
-    // pub fn is_start_stop_sync_enabled(&self) -> bool {
-    //     self.link.is_start_stop_sync_enabled()
-    // }
-
-    // pub fn set_start_stop_sync_enabled(&mut self, enabled: bool) {
-    //     self.link.enable_start_stop_sync(enabled);
-    // }
-}
-
-struct EngineData {
-    quantum: f64,
 }

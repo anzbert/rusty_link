@@ -1,6 +1,8 @@
 // This example is a Rust port of 'link_hut' (written in C++ / with audio thread).
 // Source: https://github.com/Ableton/link/tree/master/examples
 
+use crate::{audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal};
+use cpal::traits::StreamTrait;
 use crossterm::{
     cursor,
     event::{read, Event, KeyCode},
@@ -14,13 +16,11 @@ use std::{
     sync::{
         atomic::{AtomicBool, Ordering},
         mpsc::{self, Sender},
-        Arc,
+        Arc, Mutex,
     },
     thread,
     time::Duration,
 };
-
-use crate::{audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal};
 
 mod audio_engine;
 mod audio_platform_cpal;
@@ -49,36 +49,84 @@ fn main() {
     let running = Arc::new(AtomicBool::new(true));
     let running_clone1 = Arc::clone(&running);
 
+    let quantum = Arc::new(Mutex::new(4.));
+    let quantum_clone1 = Arc::clone(&quantum);
+    let quantum_clone2 = Arc::new(Mutex::new(4.));
+
     // Init Input Thread:
-    let (input_tx, input_rx) = mpsc::channel::<InputCommand>();
+    let (input_tx, input_rx) = mpsc::channel::<UpdateSessionState>();
     let input_thread = thread::spawn(move || {
-        poll_input(input_tx, running_clone1);
+        poll_input(input_tx, running_clone1, &ABL_LINK, quantum_clone1);
     });
 
     // Init Main State
     // let link: AblLink = AblLink::new(120.);
-    let audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx);
+    let audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx, quantum_clone2);
 
     // UI
     let mut app_session_state = SessionState::new();
 
     '_UI_loop: while running.load(Ordering::Acquire) {
-        audio_engine
-            .link
-            .capture_app_session_state(&mut app_session_state);
+        ABL_LINK.capture_app_session_state(&mut app_session_state);
         print_state(
-            audio_engine.link.clock_micros(),
+            ABL_LINK.clock_micros(),
             &app_session_state,
-            audio_engine.link.is_enabled(),
-            audio_engine.link.num_peers(),
-            audio_engine.quantum,
-            audio_engine.link.is_start_stop_sync_enabled(),
+            ABL_LINK.is_enabled(),
+            ABL_LINK.num_peers(),
+            *quantum.lock().unwrap(),
+            ABL_LINK.is_start_stop_sync_enabled(),
         );
         std::thread::sleep(Duration::from_millis(10));
     }
 
     // Exit App
+    audio_engine.stream.pause().unwrap();
     input_thread.join().unwrap();
+}
+
+pub enum UpdateSessionState {
+    TempoPlus,
+    TempoMinus,
+    TogglePlaying,
+}
+
+fn poll_input(
+    tx: Sender<UpdateSessionState>,
+    running: Arc<AtomicBool>,
+    link: &AblLink,
+    quantum: Arc<Mutex<f64>>,
+) {
+    terminal::enable_raw_mode().unwrap();
+    'input_loop: loop {
+        if let Event::Key(event) = read().expect("Input read error") {
+            match event.code {
+                KeyCode::Char('w') => tx.send(UpdateSessionState::TempoMinus).unwrap(),
+                KeyCode::Char('e') => tx.send(UpdateSessionState::TempoPlus).unwrap(),
+                KeyCode::Char(' ') => tx.send(UpdateSessionState::TogglePlaying).unwrap(),
+                KeyCode::Char('a') => {
+                    link.enable(!link.is_enabled());
+                }
+                KeyCode::Char('r') => {
+                    let mut q = quantum.lock().unwrap();
+                    *q = (*q - 1.).max(1.);
+                }
+                KeyCode::Char('t') => {
+                    let mut q = quantum.lock().unwrap();
+                    *q = (*q + 1.).min(16.);
+                }
+                KeyCode::Char('s') => {
+                    link.enable_start_stop_sync(!link.is_start_stop_sync_enabled());
+                }
+                KeyCode::Char('q') => {
+                    running.store(false, Ordering::Release);
+                    break 'input_loop;
+                }
+                _ => {}
+            }
+        }
+    }
+    terminal::disable_raw_mode().unwrap();
+    println!("\n");
 }
 
 fn print_state(
@@ -130,43 +178,4 @@ fn print_state(
     )
     .unwrap();
     stdout.flush().unwrap();
-}
-
-pub enum InputCommand {
-    TempoPlus,
-    TempoMinus,
-    Quit,
-    ToggleEnable,
-    QuantumPlus,
-    QuantumMinus,
-    ToggleStartStopSync,
-    TogglePlaying,
-}
-
-fn poll_input(tx: Sender<InputCommand>, running: Arc<AtomicBool>) {
-    terminal::enable_raw_mode().unwrap();
-    'input_loop: loop {
-        if let Event::Key(event) = read().expect("Input read error") {
-            match event.code {
-                KeyCode::Char('a') => {
-                    // tx.send(InputCommand::ToggleEnable).unwrap();
-                    ABL_LINK.enable(!ABL_LINK.is_enabled());
-                }
-                KeyCode::Char('w') => tx.send(InputCommand::TempoMinus).unwrap(),
-                KeyCode::Char('e') => tx.send(InputCommand::TempoPlus).unwrap(),
-                KeyCode::Char('r') => tx.send(InputCommand::QuantumMinus).unwrap(),
-                KeyCode::Char('t') => tx.send(InputCommand::QuantumPlus).unwrap(),
-                KeyCode::Char('s') => tx.send(InputCommand::ToggleStartStopSync).unwrap(),
-                KeyCode::Char(' ') => tx.send(InputCommand::TogglePlaying).unwrap(),
-                KeyCode::Char('q') => {
-                    tx.send(InputCommand::Quit).unwrap();
-                    running.store(false, Ordering::Release);
-                    break 'input_loop;
-                }
-                _ => {}
-            }
-        }
-    }
-    terminal::disable_raw_mode().unwrap();
-    println!("\n");
 }
