@@ -37,7 +37,7 @@ impl AudioEngine {
             link.capture_audio_session_state(&mut audio_session_state);
 
             if let Ok(q) = quantum.try_lock() {
-                last_known_quantum = *q
+                last_known_quantum = *q;
             };
 
             if let Ok(command) = input.try_recv() {
@@ -97,7 +97,7 @@ impl AudioEngine {
                         // quantum was zero, then it was at a quantum boundary and we
                         // want to use the high tone. For other beats within the
                         // quantum, use the low tone.
-
+                        // dbg!(last_known_quantum);
                         let freq = match audio_session_state
                             .phase_at_time(host_time as i64, last_known_quantum)
                             .floor() as usize

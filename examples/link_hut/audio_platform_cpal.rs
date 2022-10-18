@@ -2,7 +2,7 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{BufferSize, Device, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig};
 use cpal::{Stream, StreamConfig};
 
-const BUFFER_SIZE: u32 = 1024;
+const BUFFER_SIZE: u32 = 512;
 
 pub struct AudioPlatformCpal {
     device: Device,
@@ -29,10 +29,9 @@ impl AudioPlatformCpal {
 
         let mut config = first_supported_config.config();
         config.buffer_size = BufferSize::Fixed(BUFFER_SIZE);
-        // config.channels = 1;
 
         println!(
-            "SAMPLE RATE: {} ({:?})",
+            "SAMPLE RATE: {} (SampleFormat::{:?})",
             config.sample_rate.0,
             first_supported_config.sample_format()
         );
@@ -43,7 +42,7 @@ impl AudioPlatformCpal {
         );
 
         println!(
-            "BUFFER SIZE: {} samples, {:.2} ms (Supported {:?})",
+            "BUFFER SIZE: {} samples, {:.2} ms (Buffer Size {:?})",
             BUFFER_SIZE,
             BUFFER_SIZE as f64 * 1000. / config.sample_rate.0 as f64,
             first_supported_config.buffer_size()
@@ -122,11 +121,6 @@ impl AudioPlatformCpal {
                     data[s * config.channels as usize + c] = Sample::from(&buffer[s]);
                 }
             }
-
-            // For 1 channel test:
-            // for s in 0..data.len() {
-            //     data[s] = Sample::from(&buffer[s]);
-            // }
         };
         return data_fn;
     }

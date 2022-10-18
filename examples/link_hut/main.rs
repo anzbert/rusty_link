@@ -51,7 +51,7 @@ fn main() {
 
     let quantum = Arc::new(Mutex::new(4.));
     let quantum_clone1 = Arc::clone(&quantum);
-    let quantum_clone2 = Arc::new(Mutex::new(4.));
+    let quantum_clone2 = Arc::clone(&quantum);
 
     // Init Input Thread:
     let (input_tx, input_rx) = mpsc::channel::<UpdateSessionState>();
