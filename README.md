@@ -69,6 +69,8 @@ Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-
 
 ## Known Issues
 
+- I am not a professional Developer or expert in C++ or Rust, so any help with updates and corrections of my work are welcome.
+
 - The Example with sound has been implemented with [cpal](https://crates.io/crates/cpal) for cross-platform audio support. Compatibility depends on cpal and my possibly dodgy use of it. Help is appreciated. Especially with sample and host timings, since that stuff is tricky :)
 
 ## Feedback
