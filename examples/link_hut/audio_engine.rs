@@ -70,11 +70,17 @@ impl AudioEngine {
             }
 
             // ----  BUILD LATENCY COMPENSATED BUFFER WITH SYNTH SOUND ----
+
             let mut buffer: Vec<f32> = Vec::with_capacity(buffer_size);
 
             let begin_time = link.clock_micros() + output_latency as i64;
 
             for sample in 0..buffer_size {
+                if !audio_session_state.is_playing() {
+                    buffer.push(0.);
+                    continue;
+                }
+
                 let mut y_amplitude: f32 = 0.; // Default is silent
 
                 // Compute the host time for this sample and the last.
