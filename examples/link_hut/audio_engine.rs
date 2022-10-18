@@ -31,8 +31,9 @@ impl AudioEngine {
         let engine_callback = move |buffer_size: usize,
                                     output_latency: u64,
                                     sample_time_micros: f64,
-                                    sample_rate: u32| {
-            let invoke_time = link.clock_micros();
+                                    sample_rate: u32,
+                                    invoke_time: i64| {
+            // let invoke_time = link.clock_micros();
 
             // ---- HANDLE AUDIO SESSION STATE ----
             link.capture_audio_session_state(&mut audio_session_state);
@@ -87,17 +88,18 @@ impl AudioEngine {
 
                 // Compute the host time for this sample and the last.
                 let host_time = begin_time + (sample_time_micros * sample as f64) as i64;
-                let last_sample_host_time = host_time - (sample_time_micros) as i64;
+                let last_sample_host_time = host_time - sample_time_micros as i64;
 
                 if host_time < last_host_time {
                     println!(
-                        "inv {}, h {} / l {} / diff {} / s {} / samp_time {}",
+                        "inv {}, h {} / l {} / diff {} / s {} / samp_time {} / lat {}",
                         invoke_counter,
                         host_time,
                         last_host_time,
                         last_host_time - host_time,
                         sample,
-                        sample_time_micros
+                        sample_time_micros,
+                        output_latency
                     );
                 }
                 last_host_time = host_time;

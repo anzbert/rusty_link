@@ -2,6 +2,8 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{BufferSize, Device, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig};
 use cpal::{Stream, StreamConfig};
 
+use crate::ABL_LINK;
+
 const BUFFER_SIZE: u32 = 512;
 
 pub struct AudioPlatformCpal {
@@ -66,11 +68,13 @@ impl AudioPlatformCpal {
 
     fn build_cpal_callback<T: Sample>(
         &self,
-        mut engine_callback: (impl FnMut(usize, u64, f64, u32) -> Vec<f32> + Send + 'static),
+        mut engine_callback: (impl FnMut(usize, u64, f64, u32, i64) -> Vec<f32> + Send + 'static),
     ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
         let config_clone = self.config.clone();
 
         let data_fn = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
+            let now = ABL_LINK.clock_micros();
+
             // output latency in micros
             let output_latency = info
                 .timestamp()
@@ -91,6 +95,7 @@ impl AudioPlatformCpal {
                 output_latency,
                 sample_time_micros,
                 config_clone.sample_rate.0,
+                now,
             );
 
             // send buffer with same sound on all channels (equals mono output) to output
@@ -105,7 +110,7 @@ impl AudioPlatformCpal {
 
     pub fn build_stream<T: Sample>(
         &self,
-        engine_callback: (impl FnMut(usize, u64, f64, u32) -> Vec<f32> + Send + 'static),
+        engine_callback: (impl FnMut(usize, u64, f64, u32, i64) -> Vec<f32> + Send + 'static),
     ) -> Stream {
         let callback = self.build_cpal_callback::<f32>(engine_callback);
 
