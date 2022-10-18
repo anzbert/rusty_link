@@ -20,11 +20,10 @@ pub struct SessionState {
 }
 
 unsafe impl Send for SessionState {}
-unsafe impl Sync for SessionState {}
+// unsafe impl Sync for SessionState {}
 
 impl Drop for SessionState {
     fn drop(&mut self) {
-        // println!("Dropping SessionState");
         unsafe { abl_link_destroy_session_state(self.session_state) }
     }
 }

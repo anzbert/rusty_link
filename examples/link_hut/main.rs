@@ -1,29 +1,131 @@
-// This example is a Rust port of 'link_hut' (written in C++ / with audio thread).
+// This example is a Rust port of 'LinkHut' (original written in C++) with audio support.
 // Source: https://github.com/Ableton/link/tree/master/examples
 
-mod audio;
+use crate::{
+    audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal,
+    input_thread::UpdateSessionState,
+};
+use crossterm::{cursor, queue, style::Print, terminal};
+use rusty_link::{AblLink, SessionState};
+use std::{
+    io::{self, Write},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        mpsc, Arc, Mutex,
+    },
+    thread,
+    time::Duration,
+};
+
+mod audio_engine;
+mod audio_platform_cpal;
+mod input_thread;
+
+#[macro_use]
+extern crate lazy_static;
+lazy_static! {
+    static ref ABL_LINK: AblLink = AblLink::new(120.);
+}
 
 fn main() {
-    println!("Example under development...");
+    let audio_platform = AudioPlatformCpal::new();
 
-    // println!("\n\n < L I N K  H U T >\n");
+    println!("\n < L I N K  H U T >\n");
 
-    // println!("usage:");
-    // println!("  enable / disable Link: a");
-    // println!("  start / stop: space");
-    // println!("  decrease / increase tempo: w / e");
-    // println!("  decrease / increase quantum: r / t");
-    // println!("  enable / disable start stop sync: s");
-    // println!("  quit: q");
+    println!("usage:");
+    println!("  enable / disable Link: a");
+    println!("  start / stop: space");
+    println!("  decrease / increase tempo: w / e");
+    println!("  decrease / increase quantum: r / t");
+    println!("  enable / disable start stop sync: s");
+    println!("  quit: q");
 
-    // println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
+    println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
 
-    // terminal::enable_raw_mode().unwrap();
+    // Multithread State:
+    let running = Arc::new(AtomicBool::new(true));
+    let running_clone1 = Arc::clone(&running);
 
-    // '_main_loop: while state.running {
-    // poll_input(&mut state).expect("Input Fn Error");
-    // print_state(&mut state);
-    // }
+    let quantum = Arc::new(Mutex::new(4.));
+    let quantum_clone1 = Arc::clone(&quantum);
+    let quantum_clone2 = Arc::clone(&quantum);
 
-    // terminal::disable_raw_mode().unwrap();
+    // Input Thread:
+    let (input_tx, input_rx) = mpsc::channel::<UpdateSessionState>();
+    let input_thread = thread::spawn(move || {
+        input_thread::poll_input(input_tx, running_clone1, &ABL_LINK, quantum_clone1);
+    });
+
+    // Audio Engine
+    let _audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx, quantum_clone2);
+
+    // UI
+    let mut app_session_state = SessionState::new();
+    '_UI_thread_loop: while running.load(Ordering::Acquire) {
+        ABL_LINK.capture_app_session_state(&mut app_session_state);
+        print_state(
+            ABL_LINK.clock_micros(),
+            &app_session_state,
+            ABL_LINK.is_enabled(),
+            ABL_LINK.num_peers(),
+            *quantum.lock().unwrap(),
+            ABL_LINK.is_start_stop_sync_enabled(),
+        );
+        std::thread::sleep(Duration::from_millis(16));
+    }
+
+    // Exit
+    input_thread.join().unwrap();
+    ABL_LINK.enable(false);
+}
+
+fn print_state(
+    time: i64,
+    state: &SessionState,
+    link_enabled: bool,
+    num_peers: u64,
+    quantum: f64,
+    start_stop_sync_on: bool,
+) {
+    let enabled = match link_enabled {
+        true => "yes",
+        false => "no ",
+    }
+    .to_string();
+    let start_stop = match start_stop_sync_on {
+        true => "yes",
+        false => "no ",
+    };
+    let playing = match state.is_playing() {
+        true => "[playing]",
+        false => "[stopped]",
+    };
+    let tempo = state.tempo();
+    let beats = state.beat_at_time(time, quantum);
+    let phase = state.phase_at_time(time, quantum);
+    let mut metro = String::with_capacity(quantum as usize);
+    for i in 0..quantum as usize {
+        if i > phase as usize {
+            metro.push('O');
+        } else {
+            metro.push('X');
+        }
+    }
+
+    let mut stdout = io::stdout();
+    queue!(
+        stdout,
+        cursor::SavePosition,
+        terminal::Clear(terminal::ClearType::FromCursorDown),
+        Print(format!("{:<7} | ", enabled)),
+        Print(format!("{:<9} | ", num_peers)),
+        Print(format!("{:<7} | ", quantum.trunc())),
+        Print(format!("{:<3}   {:<9} | ", start_stop, playing)),
+        Print(format!("{:<7.2} | ", tempo)),
+        Print(format!("{:<8.2} | ", beats)),
+        Print(format!("{}", metro)),
+        cursor::RestorePosition,
+    )
+    .unwrap();
+    stdout.flush().unwrap();
 }

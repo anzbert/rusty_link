@@ -24,7 +24,7 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         Self {
-            link: AblLink::new(100.),
+            link: AblLink::new(120.),
             session_state: SessionState::new(),
             running: true,
             quantum: 4.,
@@ -131,7 +131,6 @@ fn poll_input(state: &mut State) -> crossterm::Result<()> {
                 KeyCode::Char(' ') => {
                     if state.session_state.is_playing() {
                         state.session_state.set_is_playing(false, time_stamp as u64);
-                        state.commit_app_state();
                     } else {
                         state.session_state.set_is_playing_and_request_beat_at_time(
                             true,
@@ -139,8 +138,8 @@ fn poll_input(state: &mut State) -> crossterm::Result<()> {
                             0.,
                             state.quantum,
                         );
-                        state.commit_app_state();
                     }
+                    state.commit_app_state();
                 }
                 _ => {}
             }
@@ -171,7 +170,8 @@ fn main() {
         print_state(&mut state);
     }
 
-    terminal::disable_raw_mode().unwrap();
-
     state.link.enable(false);
+
+    terminal::disable_raw_mode().unwrap();
+    println!("\n");
 }
