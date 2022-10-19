@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{BufferSize, Device, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig};
 use cpal::{Stream, StreamConfig};
@@ -68,34 +70,31 @@ impl AudioPlatformCpal {
 
     fn build_cpal_callback<T: Sample>(
         &self,
-        mut engine_callback: (impl FnMut(usize, u64, f64, u32, i64) -> Vec<f32> + Send + 'static),
+        mut engine_callback: (impl FnMut(usize, u32, Duration, Duration) -> Vec<f32> + Send + 'static),
     ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
         let config_clone = self.config.clone();
 
         let data_fn = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
-            let now = ABL_LINK.clock_micros();
-
             // output latency in micros
             let output_latency = info
                 .timestamp()
                 .playback
                 .duration_since(&info.timestamp().callback)
-                .unwrap_or_default()
-                .as_micros() as u64;
+                .unwrap_or_default();
 
             // size of output buffer in samples
             let buffer_size: usize = data.len() / config_clone.channels as usize;
 
             // sample time in micros per sample at the current sample rate
-            let sample_time_micros: f64 = 1_000_000. / config_clone.sample_rate.0 as f64;
+            let sample_time_micros =
+                Duration::from_secs(1).div_f64(config_clone.sample_rate.0 as f64);
 
             // invoke callback which builds a latency compensated buffer and handles link audio sessionstate
             let buffer: Vec<f32> = engine_callback(
                 buffer_size,
+                config_clone.sample_rate.0,
                 output_latency,
                 sample_time_micros,
-                config_clone.sample_rate.0,
-                now,
             );
 
             // send buffer with same sound on all channels (equals mono output) to output
@@ -110,7 +109,7 @@ impl AudioPlatformCpal {
 
     pub fn build_stream<T: Sample>(
         &self,
-        engine_callback: (impl FnMut(usize, u64, f64, u32, i64) -> Vec<f32> + Send + 'static),
+        engine_callback: (impl FnMut(usize, u32, Duration, Duration) -> Vec<f32> + Send + 'static),
     ) -> Stream {
         let callback = self.build_cpal_callback::<f32>(engine_callback);
 

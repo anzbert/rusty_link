@@ -2,8 +2,10 @@ use crate::{audio_platform_cpal::AudioPlatformCpal, input_thread::UpdateSessionS
 use cpal::Stream;
 use rusty_link::{AblLink, SessionState};
 use std::{
+    cmp::Ordering,
     f32::consts::TAU,
     sync::{mpsc::Receiver, Arc, Mutex},
+    time::Duration,
 };
 
 const HIGH_TONE: f32 = 1567.98; // G
@@ -21,19 +23,33 @@ impl AudioEngine {
         input: Receiver<UpdateSessionState>,
         quantum: Arc<Mutex<f64>>,
     ) -> Self {
-        let mut time_at_last_click = 0;
+        let mut time_at_last_click = Duration::from_secs(0);
         let mut synth_clock: u32 = 0;
         let mut audio_session_state = SessionState::new();
         let mut last_known_quantum = *quantum.lock().unwrap();
-        let mut last_host_time = 0;
+        let mut last_host_time = Duration::from_secs(0);
         let mut invoke_counter = 0;
+        let mut frame_counter = 0;
+        let mut started = false;
+        let mut start_time = 0;
 
         let engine_callback = move |buffer_size: usize,
-                                    output_latency: u64,
-                                    sample_time_micros: f64,
                                     sample_rate: u32,
-                                    invoke_time: i64| {
-            // let invoke_time = link.clock_micros();
+                                    output_latency: Duration,
+                                    sample_time_micros: Duration| {
+            let invoke_time = link.clock_micros();
+            let invoke_time_duration = Duration::from_micros(invoke_time.max(0) as u64);
+            let invoke_frame_time = sample_time_micros * frame_counter;
+
+            if !started {
+                start_time = invoke_time.max(0);
+                started = true;
+                // println!("yo");
+            }
+            println!(
+                "jitter {}",
+                (invoke_time_duration - invoke_frame_time).as_micros() as i64 - start_time,
+            );
 
             // ---- HANDLE AUDIO SESSION STATE ----
             link.capture_audio_session_state(&mut audio_session_state);
@@ -74,7 +90,7 @@ impl AudioEngine {
 
             let mut buffer: Vec<f32> = Vec::with_capacity(buffer_size);
 
-            let begin_time = invoke_time + output_latency as i64;
+            let begin_time = invoke_time_duration + output_latency;
 
             invoke_counter += 1;
 
@@ -87,31 +103,35 @@ impl AudioEngine {
                 let mut y_amplitude: f32 = 0.; // Default is silent
 
                 // Compute the host time for this sample and the last.
-                let host_time = begin_time + (sample_time_micros * sample as f64) as i64;
-                let last_sample_host_time = host_time - sample_time_micros as i64;
+                let host_time = begin_time + (sample_time_micros * sample as u32);
+                let last_sample_host_time = host_time - sample_time_micros;
 
-                if host_time < last_host_time {
+                if let std::cmp::Ordering::Less = host_time.cmp(&last_sample_host_time) {
                     println!(
-                        "inv {}, h {} / l {} / diff {} / s {} / samp_time {} / lat {}",
+                        "inv {}, h {} / l {} / diff _ / s {} / samp_time {} / lat {} ",
                         invoke_counter,
-                        host_time,
-                        last_host_time,
-                        last_host_time - host_time,
+                        host_time.as_micros(),
+                        last_host_time.as_micros(),
+                        // (last_host_time - host_time).as_micros(),
                         sample,
-                        sample_time_micros,
-                        output_latency
+                        sample_time_micros.as_nanos(),
+                        output_latency.as_micros(),
                     );
                 }
                 last_host_time = host_time;
 
                 // Only make sound for positive beat magnitudes. Negative beat
                 // magnitudes are count-in beats.
-                if audio_session_state.beat_at_time(host_time, last_known_quantum) >= 0. {
+                if audio_session_state
+                    .beat_at_time(host_time.as_micros() as i64, last_known_quantum)
+                    >= 0.
+                {
                     // If the phase wraps around between the last sample and the
                     // current one with respect to a 1 beat quantum, then a click
                     // should occur.
-                    if audio_session_state.phase_at_time(host_time, 1.0)
-                        < audio_session_state.phase_at_time(last_sample_host_time, 1.0)
+                    if audio_session_state.phase_at_time(host_time.as_micros() as i64, 1.0)
+                        < audio_session_state
+                            .phase_at_time(last_sample_host_time.as_micros() as i64, 1.0)
                     {
                         time_at_last_click = host_time; // reset last click time
                         synth_clock = 0; // reset synth clock
@@ -121,13 +141,15 @@ impl AudioEngine {
 
                     // If we're within the click duration of the last beat, render
                     // the click tone into this sample
-                    if micro_seconds_after_click < CLICK_DURATION {
+                    if let Ordering::Less =
+                        micro_seconds_after_click.cmp(&Duration::from_millis(100))
+                    {
                         // If the phase of the last beat with respect to the current
                         // quantum was zero, then it was at a quantum boundary and we
                         // want to use the high tone. For other beats within the
                         // quantum, use the low tone.
                         let freq = match audio_session_state
-                            .phase_at_time(host_time, last_known_quantum)
+                            .phase_at_time(host_time.as_micros() as i64, last_known_quantum)
                             .floor() as usize
                         {
                             0 => HIGH_TONE,
@@ -148,6 +170,8 @@ impl AudioEngine {
                 }
                 buffer.push(y_amplitude);
             }
+
+            frame_counter += buffer_size as u32;
             buffer
         };
 
