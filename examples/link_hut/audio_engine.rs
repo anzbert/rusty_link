@@ -1,6 +1,6 @@
 use crate::{audio_platform_cpal::AudioPlatformCpal, input_thread::UpdateSessionState};
 use cpal::Stream;
-use rusty_link::{AblLink, SessionState};
+use rusty_link::{AblLink, HostTimeFilter, SessionState};
 use std::{
     cmp::Ordering,
     f32::consts::TAU,
@@ -27,29 +27,36 @@ impl AudioEngine {
         let mut synth_clock: u32 = 0;
         let mut audio_session_state = SessionState::new();
         let mut last_known_quantum = *quantum.lock().unwrap();
-        let mut last_host_time = Duration::from_secs(0);
-        let mut invoke_counter = 0;
+        // let mut last_host_time = Duration::from_secs(0);
+        // let mut invoke_counter = 0;
         let mut frame_counter = 0;
-        let mut started = false;
-        let mut start_time = 0;
+        // let mut started = false;
+        // let mut start_time = 0;
+
+        let mut host_time_filter = HostTimeFilter::new();
 
         let engine_callback = move |buffer_size: usize,
                                     sample_rate: u32,
                                     output_latency: Duration,
                                     sample_time_micros: Duration| {
-            let invoke_time = link.clock_micros();
-            let invoke_time_duration = Duration::from_micros(invoke_time.max(0) as u64);
-            let invoke_frame_time = sample_time_micros * frame_counter;
+            // let invoke = link.clock_micros();
 
-            if !started {
-                start_time = invoke_time.max(0);
-                started = true;
-                // println!("yo");
-            }
-            println!(
-                "jitter {}",
-                (invoke_time_duration - invoke_frame_time).as_micros() as i64 - start_time,
-            );
+            let invoke_time = host_time_filter
+                .sample_time_to_host_time(link.clock_micros(), frame_counter as u64);
+
+            let invoke_time_as_duration = Duration::from_micros(invoke_time as u64);
+            // let invoke_frame_time = sample_time_micros * frame_counter;
+
+            // if !started {
+            //     start_time = invoke_time.max(0);
+            //     started = true;
+            // }
+
+            // println!(
+            //     "jitter {}, filtered jitter {}",
+            //     (invoke_time_as_duration - invoke_frame_time).as_micros() as i64 - start_time,
+            //     filtered_time as i64 - invoke_frame_time.as_micros() as i64 - start_time
+            // );
 
             // ---- HANDLE AUDIO SESSION STATE ----
             link.capture_audio_session_state(&mut audio_session_state);
@@ -90,9 +97,9 @@ impl AudioEngine {
 
             let mut buffer: Vec<f32> = Vec::with_capacity(buffer_size);
 
-            let begin_time = invoke_time_duration + output_latency;
+            let begin_time = invoke_time_as_duration + output_latency;
 
-            invoke_counter += 1;
+            // invoke_counter += 1;
 
             for sample in 0..buffer_size {
                 if !audio_session_state.is_playing() {
@@ -106,19 +113,19 @@ impl AudioEngine {
                 let host_time = begin_time + (sample_time_micros * sample as u32);
                 let last_sample_host_time = host_time - sample_time_micros;
 
-                if let std::cmp::Ordering::Less = host_time.cmp(&last_sample_host_time) {
-                    println!(
-                        "inv {}, h {} / l {} / diff _ / s {} / samp_time {} / lat {} ",
-                        invoke_counter,
-                        host_time.as_micros(),
-                        last_host_time.as_micros(),
-                        // (last_host_time - host_time).as_micros(),
-                        sample,
-                        sample_time_micros.as_nanos(),
-                        output_latency.as_micros(),
-                    );
-                }
-                last_host_time = host_time;
+                // if let std::cmp::Ordering::Less = host_time.cmp(&last_sample_host_time) {
+                //     println!(
+                //         "inv {}, h {} / l {} / diff _ / s {} / samp_time {} / lat {} ",
+                //         invoke_counter,
+                //         host_time.as_micros(),
+                //         last_host_time.as_micros(),
+                //         // (last_host_time - host_time).as_micros(),
+                //         sample,
+                //         sample_time_micros.as_nanos(),
+                //         output_latency.as_micros(),
+                //     );
+                // }
+                // last_host_time = host_time;
 
                 // Only make sound for positive beat magnitudes. Negative beat
                 // magnitudes are count-in beats.

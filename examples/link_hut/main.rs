@@ -63,14 +63,14 @@ fn main() {
     let mut app_session_state = SessionState::new();
     '_UI_thread_loop: while running.load(Ordering::Acquire) {
         ABL_LINK.capture_app_session_state(&mut app_session_state);
-        // print_state(
-        //     ABL_LINK.clock_micros(),
-        //     &app_session_state,
-        //     ABL_LINK.is_enabled(),
-        //     ABL_LINK.num_peers(),
-        //     *quantum.lock().unwrap(),
-        //     ABL_LINK.is_start_stop_sync_enabled(),
-        // );
+        print_state(
+            ABL_LINK.clock_micros(),
+            &app_session_state,
+            ABL_LINK.is_enabled(),
+            ABL_LINK.num_peers(),
+            *quantum.lock().unwrap(),
+            ABL_LINK.is_start_stop_sync_enabled(),
+        );
         std::thread::sleep(Duration::from_millis(16));
     }
 
