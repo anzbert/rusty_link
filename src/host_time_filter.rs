@@ -1,6 +1,6 @@
 pub struct HostTimeFilter {
     points_buffer: Vec<TimeDataPoint>,
-    points_buffer_size: usize,
+    max_buffer_size: usize,
     index: usize,
 }
 
@@ -9,7 +9,7 @@ impl HostTimeFilter {
         const BUFFER_SIZE: usize = 512; // Default Value
         Self {
             points_buffer: Vec::with_capacity(BUFFER_SIZE),
-            points_buffer_size: BUFFER_SIZE,
+            max_buffer_size: BUFFER_SIZE,
             index: 0,
         }
     }
@@ -19,20 +19,24 @@ impl HostTimeFilter {
         unfiltered_clock_micros: i64,
         sample_time: u64,
     ) -> i64 {
+        // make a pair struct of the current sample time and corresponding clock_micros host time to add to the buffer
         let point = TimeDataPoint::new(sample_time, unfiltered_clock_micros as u64);
 
-        if self.points_buffer.len() < self.points_buffer_size {
+        // Fill buffer, then keep recycling it by adding new values at index
+        if self.points_buffer.len() < self.max_buffer_size {
             self.points_buffer.push(point);
         } else {
             self.points_buffer[self.index] = point;
         }
-        self.index = (self.index + 1) % self.points_buffer_size;
+        self.index = (self.index + 1) % self.max_buffer_size;
 
-        let result = Self::linear_regression(&self.points_buffer);
+        // calculate a line based on time data points currently in buffer
+        let line = Self::linear_regression(&self.points_buffer);
 
-        let host_time = result.slope * sample_time as f64 + result.intercept;
+        // apply line to current sample time to get a filtered clock time in micros
+        let filtered_clock_micros = line.slope * sample_time as f64 + line.intercept;
 
-        host_time.round() as i64
+        filtered_clock_micros.round() as i64
     }
 
     fn linear_regression(buffer: &Vec<TimeDataPoint>) -> Line {
