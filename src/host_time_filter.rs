@@ -1,17 +1,15 @@
-use crate::AblLink;
-
 pub struct HostTimeFilter {
-    points: Vec<TimeDataPoint>,
+    points_buffer: Vec<TimeDataPoint>,
+    points_buffer_size: usize,
     index: usize,
-    k_num_points: usize,
 }
 
 impl HostTimeFilter {
     pub fn new() -> Self {
-        const K_NUM_POINTS: usize = 512; // Default Value
+        const BUFFER_SIZE: usize = 512; // Default Value
         Self {
-            points: Vec::with_capacity(K_NUM_POINTS),
-            k_num_points: K_NUM_POINTS,
+            points_buffer: Vec::with_capacity(BUFFER_SIZE),
+            points_buffer_size: BUFFER_SIZE,
             index: 0,
         }
     }
@@ -23,14 +21,14 @@ impl HostTimeFilter {
     ) -> i64 {
         let point = TimeDataPoint::new(sample_time, unfiltered_clock_micros as u64);
 
-        if self.points.len() < self.k_num_points {
-            self.points.push(point);
+        if self.points_buffer.len() < self.points_buffer_size {
+            self.points_buffer.push(point);
         } else {
-            self.points[self.index] = point;
+            self.points_buffer[self.index] = point;
         }
-        self.index = (self.index + 1) % self.k_num_points;
+        self.index = (self.index + 1) % self.points_buffer_size;
 
-        let result = Self::linear_regression(&self.points);
+        let result = Self::linear_regression(&self.points_buffer);
 
         let host_time = result.slope * sample_time as f64 + result.intercept;
 

@@ -1,10 +1,7 @@
-use std::time::Duration;
-
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{BufferSize, Device, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig};
 use cpal::{Stream, StreamConfig};
-
-use crate::ABL_LINK;
+use std::time::Duration;
 
 const BUFFER_SIZE: u32 = 512;
 
@@ -70,7 +67,7 @@ impl AudioPlatformCpal {
 
     fn build_cpal_callback<T: Sample>(
         &self,
-        mut engine_callback: (impl FnMut(usize, u32, Duration, Duration) -> Vec<f32> + Send + 'static),
+        mut engine_callback: (impl FnMut(usize, u64, Duration, Duration) -> Vec<f32> + Send + 'static),
     ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
         let config_clone = self.config.clone();
 
@@ -92,7 +89,7 @@ impl AudioPlatformCpal {
             // invoke callback which builds a latency compensated buffer and handles link audio sessionstate
             let buffer: Vec<f32> = engine_callback(
                 buffer_size,
-                config_clone.sample_rate.0,
+                config_clone.sample_rate.0 as u64,
                 output_latency,
                 sample_time_micros,
             );
@@ -109,7 +106,7 @@ impl AudioPlatformCpal {
 
     pub fn build_stream<T: Sample>(
         &self,
-        engine_callback: (impl FnMut(usize, u32, Duration, Duration) -> Vec<f32> + Send + 'static),
+        engine_callback: (impl FnMut(usize, u64, Duration, Duration) -> Vec<f32> + Send + 'static),
     ) -> Stream {
         let callback = self.build_cpal_callback::<f32>(engine_callback);
 
