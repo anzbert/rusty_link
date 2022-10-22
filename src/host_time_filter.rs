@@ -26,7 +26,7 @@ impl HostTimeFilter {
     }
 
     /// Performs a linear regression between system time and sample time in order
-    /// to improve the accuracy of system time values.
+    /// to improve the accuracy of system time values. Usually used in the audio callback.
     pub fn sample_time_to_host_time(&mut self, clock_micros: i64, sample_clock: u64) -> i64 {
         assert!(clock_micros >= 0, "Negative clock values unsupported.");
 

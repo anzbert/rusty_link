@@ -37,7 +37,7 @@ impl AudioEngine {
                                     output_latency: Duration,
                                     sample_time: Duration,
                                     sample_clock: u64| {
-            // Update all times and variables to the latest version:
+            // Update time and other variables:
             let invoke_time =
                 host_time_filter.sample_time_to_host_time(link.clock_micros(), sample_clock);
 
@@ -51,7 +51,7 @@ impl AudioEngine {
 
             link.capture_audio_session_state(&mut audio_session_state);
 
-            // Handle Audio SessionState changes by the UI
+            // Commit SessionState changes sent by the Input Thread
             if let Ok(command) = input.try_recv() {
                 match command {
                     UpdateSessionState::TempoPlus => {
@@ -107,16 +107,16 @@ impl AudioEngine {
                         < audio_session_state
                             .phase_at_time(last_sample_host_time.as_micros() as i64, 1.0)
                     {
-                        time_at_last_click = sample_host_time; // reset last click time
+                        time_at_last_click = sample_host_time; // reset last click trigger time
                         synth_clock = 0; // reset synth clock
                     }
 
-                    let micro_seconds_after_click = sample_host_time - time_at_last_click;
+                    let time_after_click = sample_host_time - time_at_last_click;
 
                     // If we're within the click duration of the last beat, render
                     // the click tone into this sample
                     if let Ordering::Less =
-                        micro_seconds_after_click.cmp(&Duration::from_millis(CLICK_DURATION))
+                        time_after_click.cmp(&Duration::from_millis(CLICK_DURATION))
                     {
                         // If the phase of the last beat with respect to the current
                         // quantum was zero, then it was at a quantum boundary and we
