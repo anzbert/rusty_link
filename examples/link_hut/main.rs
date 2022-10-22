@@ -62,9 +62,10 @@ fn main() {
     // Init Audio Engine
     let _audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx, quantum_clone2);
 
-    // UI Loop
+    // Crossterm UI
     let mut app_session_state = SessionState::new();
-    '_UI_thread_loop: while running.load(Ordering::Acquire) {
+
+    '_UI_loop: while running.load(Ordering::Acquire) {
         ABL_LINK.capture_app_session_state(&mut app_session_state);
         print_state(
             ABL_LINK.clock_micros(),
@@ -116,6 +117,7 @@ fn print_state(
     }
 
     let mut stdout = io::stdout();
+
     queue!(
         stdout,
         cursor::SavePosition,
@@ -130,5 +132,6 @@ fn print_state(
         cursor::RestorePosition,
     )
     .unwrap();
+
     stdout.flush().unwrap();
 }

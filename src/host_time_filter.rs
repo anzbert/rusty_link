@@ -25,11 +25,13 @@ impl HostTimeFilter {
         self.index = 0;
     }
 
+    /// Performs a linear regression between system time and sample time in order
+    /// to improve the accuracy of system time values.
     pub fn sample_time_to_host_time(&mut self, clock_micros: i64, sample_clock: u64) -> i64 {
-        assert!(clock_micros > 0);
+        assert!(clock_micros >= 0, "Negative clock values unsupported.");
 
         // Make a pair struct of the current sample time and corresponding clock_micros host time to add to the buffer
-        let point = TimeDataPoint::new(sample_clock, clock_micros as u64);
+        let point = TimeDataPoint::new(sample_clock as u128, clock_micros as u128);
 
         // Fill buffer, then keep recycling it by adding new values at index
         if self.points_buffer.len() < self.max_buffer_size {
@@ -49,15 +51,17 @@ impl HostTimeFilter {
         filtered_clock_micros.round() as i64
     }
 
-    /// Simple liner regression from a buffer of points in time on 2 different clocks
+    /// Simple liner regression from a buffer of points in time on 2 different clocks. Math in microseconds
+    /// can easily overflow a i64 or even a u64 when summing up lots of multiplications. Hence I am
+    /// trying u128 here (Same as what Duration uses internally) to avoid that and to maintain accuracy.
     fn linear_regression(buffer: &Vec<TimeDataPoint>) -> Line {
-        let num_points = buffer.len() as u64;
-        assert!(num_points > 0);
+        let num_points = buffer.len() as u128;
+        assert!(num_points > 0, "Provide at least one TimeDataPoint.");
 
-        let mut sum_x: u64 = 0;
-        let mut sum_xx: u64 = 0;
-        let mut sum_xy: u64 = 0;
-        let mut sum_y: u64 = 0;
+        let mut sum_x: u128 = 0;
+        let mut sum_xx: u128 = 0;
+        let mut sum_xy: u128 = 0;
+        let mut sum_y: u128 = 0;
 
         for p in buffer {
             sum_x += p.sample_clock;
@@ -69,7 +73,7 @@ impl HostTimeFilter {
         let denominator = num_points * sum_xx - sum_x * sum_x;
 
         let slope = match denominator {
-            0 => 0.,
+            0 => 0.0,
             _ => (num_points * sum_xy - sum_x * sum_y) as f64 / denominator as f64,
         };
 
@@ -80,12 +84,12 @@ impl HostTimeFilter {
 }
 
 struct TimeDataPoint {
-    sample_clock: u64,
-    host_clock: u64,
+    sample_clock: u128,
+    host_clock: u128,
 }
 
 impl TimeDataPoint {
-    fn new(sample_clock: u64, host_clock: u64) -> Self {
+    fn new(sample_clock: u128, host_clock: u128) -> Self {
         Self {
             sample_clock,
             host_clock,

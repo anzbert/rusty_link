@@ -62,29 +62,23 @@ Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-
 
 ## Implementation
 
-- An instance of AblLink can be thought of as an Object with internal mutability. Kind of like a RefCell. Thread safety is guaranteed with internal Mutexes on the C++ side. Check the function and Link documentation for more.
 - rusty_link currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available, except for the destructors, which are implemented on the Drop trait.
-- Function documentation has been copied almost 1:1 from 'abl_link.h' as it should still apply.
+- An instance of AblLink can be thought of as an Object with internal mutability. Kind of like a RefCell. Thread safety is guaranteed in all functions, except for the capture/commit of Session States, with internal Mutexes on the C++ side. Check the function and Link documentation for more.
 - The `create` functions for abl_link and session_state have been renamed to `new` to make the API more Rust-intuitive.
 - Functions have been implemented as methods on either the `AblLink` or the `SessionState` struct.
-- Delete functions have been added to delete previously set `num_peers`, `start_stop` and `tempo` callbacks.
 - Includes a Rust port of the Ableton Link [HostTimeFilter](https://github.com/Ableton/link/blob/master/include/ableton/link/HostTimeFilter.hpp), which can be used in the audio callback to align the sample clock to the host clock. See the `link_hut` example for details.
-
-## Known Issues
-
+- Delete functions have been added to delete previously set `num_peers`, `start_stop` and `tempo` callbacks.
 - The Example with sound has been implemented with [cpal](https://crates.io/crates/cpal) for cross-platform audio support.
-
-- I am not a professional Developer or expert in C++ or Rust, so any help with updates and corrections of my work are welcome.
 
 ## Feedback
 
-Pull requests and feedback in the github [Discussions](https://github.com/anzbert/rusty_link/discussions) section is very welcome!
+I am not a professional Developer or expert in C++ or Rust, so any help with updates and corrections of my work are welcome.
 
 ## License
 
 Ableton Link is dual licensed under GPLv2+ and a proprietary [license](https://github.com/Ableton/link/blob/master/LICENSE.md).
 
-This means that this wrapper is automatically under the GPLv2+ as well. See the included Licence file.
+This means that the rusty_link crate is automatically under the GPLv2+ as well.
 
 If you would like to incorporate Link into a proprietary software application, please contact Ableton at <link-devs@ableton.com>.
 
