@@ -14,6 +14,10 @@ pub enum UpdateSessionState {
     TogglePlaying,
 }
 
+/// Polls Keyboard Input, manipulates AblLink and sends messages to
+/// the Audio Callback Thread to alter the SessionState there. The Link documentation
+/// recommends to commit changes to the SessionState in the Audio thread, if there
+/// are both App and Audio Threads.
 pub fn poll_input(
     tx: mpsc::Sender<UpdateSessionState>,
     running: Arc<AtomicBool>,
@@ -41,14 +45,12 @@ pub fn poll_input(
                 KeyCode::Char('s') => {
                     link.enable_start_stop_sync(!link.is_start_stop_sync_enabled());
                 }
-                KeyCode::Char('q') => {
-                    running.store(false, Ordering::Release);
-                    break 'input_loop;
-                }
+                KeyCode::Char('q') => break 'input_loop,
                 _ => {}
             }
         }
     }
     terminal::disable_raw_mode().unwrap();
     println!("\n");
+    running.store(false, Ordering::Release);
 }

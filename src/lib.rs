@@ -17,9 +17,11 @@ mod rust_bindings {
 }
 
 mod abl_link;
+mod host_time_filter;
 mod session_state;
 mod split;
 
 // PUBLIC API
 pub use abl_link::AblLink;
+pub use host_time_filter::HostTimeFilter;
 pub use session_state::SessionState;

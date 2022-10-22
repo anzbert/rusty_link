@@ -1,5 +1,6 @@
 // This example is a Rust port of 'LinkHut' (original written in C++) with audio support.
 // Source: https://github.com/Ableton/link/tree/master/examples
+// See the cpal documtation (https://github.com/RustAudio/cpal) for ASIO and jack support
 
 use crate::{
     audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal,
@@ -28,8 +29,10 @@ lazy_static! {
 }
 
 fn main() {
+    // Init Audio Device and print device info
     let audio_platform = AudioPlatformCpal::new();
 
+    // Print Menu
     println!("\n < L I N K  H U T >\n");
 
     println!("usage:");
@@ -42,7 +45,7 @@ fn main() {
 
     println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
 
-    // Multithread State:
+    // Init Multithread State
     let running = Arc::new(AtomicBool::new(true));
     let running_clone1 = Arc::clone(&running);
 
@@ -50,18 +53,19 @@ fn main() {
     let quantum_clone1 = Arc::clone(&quantum);
     let quantum_clone2 = Arc::clone(&quantum);
 
-    // Input Thread:
+    // Init Terminal Input Thread
     let (input_tx, input_rx) = mpsc::channel::<UpdateSessionState>();
     let input_thread = thread::spawn(move || {
         input_thread::poll_input(input_tx, running_clone1, &ABL_LINK, quantum_clone1);
     });
 
-    // Audio Engine
+    // Init Audio Engine
     let _audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx, quantum_clone2);
 
-    // UI
+    // Crossterm UI
     let mut app_session_state = SessionState::new();
-    '_UI_thread_loop: while running.load(Ordering::Acquire) {
+
+    '_UI_loop: while running.load(Ordering::Acquire) {
         ABL_LINK.capture_app_session_state(&mut app_session_state);
         print_state(
             ABL_LINK.clock_micros(),
@@ -71,10 +75,10 @@ fn main() {
             *quantum.lock().unwrap(),
             ABL_LINK.is_start_stop_sync_enabled(),
         );
-        std::thread::sleep(Duration::from_millis(16));
+        std::thread::sleep(Duration::from_millis(16)); // Frame Time 16ms = ~60fps
     }
 
-    // Exit
+    // Quit App
     input_thread.join().unwrap();
     ABL_LINK.enable(false);
 }
@@ -113,6 +117,7 @@ fn print_state(
     }
 
     let mut stdout = io::stdout();
+
     queue!(
         stdout,
         cursor::SavePosition,
@@ -127,5 +132,6 @@ fn print_state(
         cursor::RestorePosition,
     )
     .unwrap();
+
     stdout.flush().unwrap();
 }
