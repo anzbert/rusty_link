@@ -36,6 +36,8 @@ There is also a Rust port of the more complex ['LinkHut' C++ example](https://gi
 cargo run --release --example link_hut
 ```
 
+See the [cpal documentation](https://github.com/RustAudio/cpal) for ASIO and Jack support, if required.
+
 ## Requirements
 
 Requires a recent version of CMake (3.14 or newer) to be installed and available in your terminal. Test with `cmake --version`.
@@ -66,12 +68,13 @@ Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-
 - The `create` functions for abl_link and session_state have been renamed to `new` to make the API more Rust-intuitive.
 - Functions have been implemented as methods on either the `AblLink` or the `SessionState` struct.
 - Delete functions have been added to delete previously set `num_peers`, `start_stop` and `tempo` callbacks.
+- Includes a Rust port of the Ableton Link [HostTimeFilter](https://github.com/Ableton/link/blob/master/include/ableton/link/HostTimeFilter.hpp), which can be used in the audio callback to align the sample clock to the host clock. See the `link_hut` example for details.
 
 ## Known Issues
 
-- I am not a professional Developer or expert in C++ or Rust, so any help with updates and corrections of my work are welcome.
+- The Example with sound has been implemented with [cpal](https://crates.io/crates/cpal) for cross-platform audio support.
 
-- The Example with sound has been implemented with [cpal](https://crates.io/crates/cpal) for cross-platform audio support. Compatibility depends on cpal and my possibly dodgy use of it. Help is appreciated. Especially with sample and host timings, since that stuff is tricky :)
+- I am not a professional Developer or expert in C++ or Rust, so any help with updates and corrections of my work are welcome.
 
 ## Feedback
 
