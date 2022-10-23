@@ -16,7 +16,7 @@ categories = ["api-bindings"]
 [dev-dependencies]
 lazy_static = "^1.4.0"
 crossterm = "^0.25.0"
-cpal = "^0.14.0"       # See the cpal documentation for ASIO and Jack features
+cpal = "0.14.*"        # See the cpal documentation for ASIO and Jack features
 
 [build-dependencies]
 cmake = "^0.1.48"
