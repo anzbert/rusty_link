@@ -38,9 +38,23 @@ cargo run --release --example link_hut
 
 See the [cpal documentation](https://github.com/RustAudio/cpal) for ASIO and Jack support, if required.
 
+## Platforms
+
+Tested platforms so far:
+
+|                            | MacOS   | Windows | Linux            |
+| -------------------------- | ------- | ------- | ---------------- |
+| Building: `cargo build`    | &check; | &check; | &check;          |
+| Example: `link_hut_silent` | &check; | &check; | Linking Errors?! |
+| Example: `link_hut`        | &check; | &check; | Linking Errors?! |
+
+Help with unsuccessful tests is highly appreciated! 😘
+
 ## Requirements
 
 Requires a recent version of CMake (3.14 or newer) to be installed and available in your terminal. Test with `cmake --version`.
+
+Linux may require a few more system libraries to be installed for C compilation depending on your distro, eg `build-essential` `libasound2-dev` `pkg-config`, etc...
 
 ## Thread and Realtime Safety
 
