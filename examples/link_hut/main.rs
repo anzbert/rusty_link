@@ -1,6 +1,6 @@
 // This example is a Rust port of 'LinkHut' (original written in C++) with audio support.
 // Source: https://github.com/Ableton/link/tree/master/examples
-// See the cpal documtation (https://github.com/RustAudio/cpal) for ASIO and jack support
+// See the cpal documentation (https://github.com/RustAudio/cpal) for ASIO and Jack support
 
 use crate::{
     audio_engine::AudioEngine, audio_platform_cpal::AudioPlatformCpal,
@@ -64,9 +64,8 @@ fn main() {
     // Init Audio Engine
     let _audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx, quantum_clone2);
 
-    // Crossterm UI
+    // Crossterm UI Loop
     let mut app_session_state = SessionState::new();
-
     '_UI_loop: while running.load(Ordering::Acquire) {
         ABL_LINK.capture_app_session_state(&mut app_session_state);
         print_state(

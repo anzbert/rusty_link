@@ -20,7 +20,6 @@ pub struct SessionState {
 }
 
 unsafe impl Send for SessionState {}
-// unsafe impl Sync for SessionState {}
 
 impl Drop for SessionState {
     fn drop(&mut self) {

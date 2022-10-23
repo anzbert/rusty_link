@@ -42,33 +42,28 @@ See the [cpal documentation](https://github.com/RustAudio/cpal) for ASIO and Jac
 
 Requires a recent version of CMake (3.14 or newer) to be installed and available in your terminal. Test with `cmake --version`.
 
-## Safety
-
-### Thread and Realtime Safety
+## Thread and Realtime Safety
 
 ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) has doc comments about thread and realtime safety on some of its functions. Those comments have been copied to the functions of this library. A short explainer on what they mean:
 
 - [Thread Safety](https://en.wikipedia.org/wiki/Thread_safety): Thread-safe code only manipulates shared data structures in a manner that ensures that all threads behave properly and fulfill their design specifications without unintended interaction.
 
-- Realtime Safety: These functions can be called in a Realtime environment without blocking the thread. For example, an audio thread / callback.
+- Realtime Safety: These functions can be called in a Realtime environment without blocking the thread. For example, the audio thread/callback.
+
+## Implementation
+
+- rusty_link currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available as methods on either the `AblLink` or the `SessionState` struct, except for the destructors, which are implemented on the Drop trait.struct.
+- An instance of AblLink can be thought of as an Object with internal mutability. Thread safety is guaranteed in all functions, except for the capture/commit of Session States, with internal Mutexes on the C++ side. Check the function doc comments and official Link documentation for more.
+- Includes a Rust port of the C++ [HostTimeFilter](https://github.com/Ableton/link/blob/master/include/ableton/link/HostTimeFilter.hpp), which can be used in the audio callback to align the host clock with the sample clock.
+- Delete functions have been added to delete previously set `num_peers`, `start_stop` and `tempo` callbacks.
 
 ## Testing
 
 Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-PLAN.md) to test if your implementation of Ableton Link in your project meets all the expected requirements.
 
-## Implementation
-
-- rusty_link currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available, except for the destructors, which are implemented on the Drop trait.
-- Functions have been implemented as methods on either the `AblLink` or the `SessionState` struct.
-- An instance of AblLink can be thought of as an Object with internal mutability. Kind of like a RefCell. Thread safety is guaranteed in all functions, except for the capture/commit of Session States, with internal Mutexes on the C++ side. Check the function and Link documentation for more.
-- The `create` functions for abl_link and session_state have been renamed to `new` to make the API more Rust-intuitive.
-- Includes a Rust port of the Ableton Link [HostTimeFilter](https://github.com/Ableton/link/blob/master/include/ableton/link/HostTimeFilter.hpp), which can be used in the audio callback to align the sample clock to the host clock. See the `link_hut` example for details.
-- Delete functions have been added to delete previously set `num_peers`, `start_stop` and `tempo` callbacks.
-- The Example with sound has been implemented with [cpal](https://crates.io/crates/cpal) for cross-platform audio support.
-
 ## Feedback
 
-I am not a professional Developer or expert in C++ or Rust, so any help with updates and corrections of my work are welcome.
+I am not a professional Developer in C++ or Rust, so any help with updates and corrections of my work are welcome.
 
 ## License
 
@@ -84,7 +79,7 @@ Thanks to Magnus Herold for [his implementation](https://crates.io/crates/ableto
 I made this library to learn about FFI in Rust and I started it as a fork of his.
 
 Some code for splitting closures has been borrowed from [ffi_helpers](https://crates.io/crates/ffi_helpers) with altered functionality. Thanks to Michael F Bryan for his work.
-[Pull request](https://github.com/Michael-F-Bryan/ffi_helpers/pull/8) to ffi_helpers pending.
+[Pull request](https://github.com/Michael-F-Bryan/ffi_helpers/pull/8) to ffi_helpers pending...
 
 ## Links
 

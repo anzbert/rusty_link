@@ -1,8 +1,8 @@
-/// HostTimeFilter utility struct that performs a linear regression between
+/// Audio callbacks not always called at a perfectly regular interval, introducing jitter.
+/// The HostTimeFilter utility struct performs a linear regression between
 /// system time and sample time in order to improve the accuracy of system
-/// time values used in an audio callback. See the audio callback implementation
-/// in the 'link_hut" example to see how this is used in practice. Note
-/// that for Windows-based systems, Ableton recommends using the ASIO audio driver.
+/// time values used in the audio callback. Note that in Windows, Ableton recommends using
+/// the ASIO driver.
 pub struct HostTimeFilter {
     points_buffer: Vec<TimeDataPoint>,
     max_buffer_size: usize,

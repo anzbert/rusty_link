@@ -1,10 +1,9 @@
 //! # Rusty Link
 //!
-//! Rusty Link is a Rust wrapper of [abl_link](https://github.com/Ableton/link/tree/master/extensions/abl_link), which
-//! is a C 11 wrapper made by Ableton for their C++ codebase.
-//! This library attempts to be as unopinionated and plain as possible in
-//! copying the functionality of abl_link, while hiding unsafe behaviour and
-//! providing Rust's guarantees.
+//! Rusty Link provides bindings to [`abl_link`](https://github.com/Ableton/link/tree/master/extensions/abl_link),
+//! which is a C 11 wrapper made by Ableton for their C++ codebase.
+//! This library attempts to be fairly plain and unoppinionated in
+//! copying the functionality of `abl_link`, while providing Rust's safety guarantees.
 //!
 //! See [README.md](https://github.com/anzbert/rusty_link) for more info.
 
