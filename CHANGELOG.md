@@ -1,5 +1,6 @@
 # 0.3.0
 
+- Started Changelog
 - Added first version of Rust Ports of Examples
 
 # 0.3.1
