@@ -24,13 +24,13 @@ To run the examples, clone this repository and change into its directory. Then f
 git submodule update --init --recursive
 ```
 
-This crate includes a Rust port from C of the simple ['LinkHut'](https://github.com/anzbert/rusty_link/tree/master/examples/link_hut_silent). To run it:
+[**link_hut_silent**](https://github.com/anzbert/rusty_link/blob/master/examples/link_hut_silent/main.rs): A Rust port [from C](https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c) of the simple 'LinkHut' example without sound by Ableton. To run it:
 
 ```
 cargo run --release --example link_hut_silent
 ```
 
-There is also a Rust from C++ port of the more complex ['LinkHut'](https://github.com/anzbert/rusty_link/tree/master/examples/link_hut), which has sound. Run it like this:
+[**link_hut**](https://github.com/anzbert/rusty_link/tree/master/examples/link_hut): A Rust port [from C++](https://github.com/Ableton/link/tree/master/examples) of the more complex 'LinkHut' example **with** sound by Ableton. Run it like this:
 
 ```
 cargo run --release --example link_hut
