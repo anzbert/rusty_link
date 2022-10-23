@@ -24,6 +24,8 @@ mod input_thread;
 
 #[macro_use]
 extern crate lazy_static;
+// Using AblLink with `lazy_static` in this example, because the `cpal` audio callback requires all variables
+// to be moved into the callback, or to have a 'static lifetime. This is just one possible design solution.
 lazy_static! {
     static ref ABL_LINK: AblLink = AblLink::new(120.);
 }
@@ -83,6 +85,7 @@ fn main() {
     ABL_LINK.enable(false);
 }
 
+/// Prints SessionState and AblLink Data to the terminal.
 fn print_state(
     time: i64,
     state: &SessionState,
@@ -117,7 +120,6 @@ fn print_state(
     }
 
     let mut stdout = io::stdout();
-
     queue!(
         stdout,
         cursor::SavePosition,
@@ -132,6 +134,5 @@ fn print_state(
         cursor::RestorePosition,
     )
     .unwrap();
-
     stdout.flush().unwrap();
 }

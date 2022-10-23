@@ -31,7 +31,7 @@ impl State {
         }
     }
 
-    pub fn update_app_state(&mut self) {
+    pub fn capture_app_state(&mut self) {
         self.link.capture_app_session_state(&mut self.session_state);
     }
 
@@ -40,8 +40,9 @@ impl State {
     }
 }
 
+/// Prints SessionState and AblLink Data to the terminal.
 fn print_state(state: &mut State) {
-    state.update_app_state();
+    state.capture_app_state();
 
     let time = state.link.clock_micros();
     let enabled = match state.link.is_enabled() {
@@ -88,11 +89,13 @@ fn print_state(state: &mut State) {
     stdout.flush().unwrap();
 }
 
+/// Polls for Keyboard Input.
 fn poll_input(state: &mut State) -> crossterm::Result<()> {
-    // Poll input for 50 milliseconds
+    // Poll keyboard input (Blocking function -> Thread "sleeps" here for 50 milliseconds)
+    // Use a separate input thread for non-blocking input. (See 'link_hut' example)
     if poll(Duration::from_millis(50))? {
         if let Event::Key(event) = read()? {
-            state.update_app_state();
+            state.capture_app_state();
             let tempo = state.session_state.tempo();
             let time_stamp = state.link.clock_micros();
             let enabled = state.link.is_enabled();
@@ -108,19 +111,19 @@ fn poll_input(state: &mut State) -> crossterm::Result<()> {
                 KeyCode::Char('w') => {
                     state
                         .session_state
-                        .set_tempo((tempo - 1.).clamp(20., 999.), time_stamp);
+                        .set_tempo((tempo - 1.).max(20.), time_stamp);
                     state.commit_app_state();
                 }
                 KeyCode::Char('e') => {
                     state
                         .session_state
-                        .set_tempo((tempo + 1.).clamp(20., 999.), time_stamp);
+                        .set_tempo((tempo + 1.).min(999.), time_stamp);
                     state.commit_app_state();
                 }
 
                 // Quantum
-                KeyCode::Char('r') => state.quantum = (state.quantum - 1.).clamp(1., 16.),
-                KeyCode::Char('t') => state.quantum = (state.quantum + 1.).clamp(1., 16.),
+                KeyCode::Char('r') => state.quantum = (state.quantum - 1.).max(1.),
+                KeyCode::Char('t') => state.quantum = (state.quantum + 1.).min(16.),
 
                 // Start Stop Sync Toggle
                 KeyCode::Char('s') => state
