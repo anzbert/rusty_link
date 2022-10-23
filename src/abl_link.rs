@@ -143,14 +143,7 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
-    ///
-    ///  ## Safety:
-    ///   
-    ///  The callbacks/closures are handled by the underlying Link C++ library
-    ///  and may be run at any time.
-    ///  Data races and hidden mutations can occur if a closure captures and uses local
-    ///  variables at the same time as another thread.
-    pub fn set_num_peers_callback<C: FnMut(u64)>(&self, mut closure: C) {
+    pub fn set_num_peers_callback<C: FnMut(u64) + Send + 'static>(&self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_num_peers_callback(self.link, Some(callback), state);
@@ -164,14 +157,7 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
-    ///
-    ///  ## Safety:
-    ///  
-    ///  The callbacks/closures are handled by the underlying Link C++ library
-    ///  and may be run at any time.
-    ///  Data races and hidden mutations can occur if a closure captures and uses local
-    ///  variables at the same time as another thread.
-    pub fn set_tempo_callback<C: FnMut(f64)>(&self, mut closure: C) {
+    pub fn set_tempo_callback<C: FnMut(f64) + Send + 'static>(&self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_tempo_callback(self.link, Some(callback), state);
@@ -185,14 +171,7 @@ impl AblLink {
     ///  Realtime-safe: no
     ///
     ///  The callback is invoked on a Link-managed thread.
-    ///
-    ///  ## Safety:
-    ///  
-    ///  The callbacks/closures are handled by the underlying Link C++ library
-    ///  and may be run at any time.
-    ///  Data races and hidden mutations can occur if a closure captures and uses local
-    ///  variables at the same time as another thread.
-    pub fn set_start_stop_callback<C: FnMut(bool)>(&self, mut closure: C) {
+    pub fn set_start_stop_callback<C: FnMut(bool) + Send + 'static>(&self, mut closure: C) {
         unsafe {
             let (state, callback) = split::split_closure_trailing_data(&mut closure);
             abl_link_set_start_stop_callback(self.link, Some(callback), state);
