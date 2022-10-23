@@ -89,11 +89,10 @@ fn print_state(state: &mut State) {
     stdout.flush().unwrap();
 }
 
-/// Polls for Keyboard Input.
-fn poll_input(state: &mut State) -> crossterm::Result<()> {
-    // Poll keyboard input (Blocking function -> Thread "sleeps" here for 50 milliseconds)
-    // Use a separate input thread for non-blocking input. (See 'link_hut' example)
-    if poll(Duration::from_millis(50))? {
+/// Poll keyboard input (Blocking function -> Thread "sleeps" here for `duration`)
+/// Use a separate input thread for non-blocking input. (See `link_hut` example)
+fn poll_input(state: &mut State, duration: Duration) -> crossterm::Result<()> {
+    if poll(duration)? {
         if let Event::Key(event) = read()? {
             state.capture_app_state();
             let tempo = state.session_state.tempo();
@@ -169,7 +168,7 @@ fn main() {
     terminal::enable_raw_mode().unwrap();
 
     '_main_loop: while state.running {
-        poll_input(&mut state).expect("Input Fn Error");
+        poll_input(&mut state, Duration::from_millis(50)).expect("Input Fn Error");
         print_state(&mut state);
     }
 
