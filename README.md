@@ -38,16 +38,6 @@ cargo run --release --example link_hut
 
 See the [cpal documentation](https://github.com/RustAudio/cpal) for ASIO and Jack support, if required.
 
-## Platforms
-
-|                            | MacOS   | Windows | Linux                     |
-| -------------------------- | ------- | ------- | ------------------------- |
-| Building `rusty_link`      | &check; | &check; | &check;                   |
-| Example: `link_hut_silent` | &check; | &check; | &check;                   |
-| Example: `link_hut`        | &check; | &check; | ALSA issue with cpal ???! |
-
-Help with unsuccessful tests is highly appreciated! 😘
-
 ## Requirements
 
 Requires a recent version of CMake (3.14 or newer) to be installed and available in your terminal. Test with `cmake --version`.
@@ -72,6 +62,17 @@ Linux _may_ require a few more system libraries to be installed for C compilatio
 ## Testing
 
 Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-PLAN.md) to test if your implementation of Ableton Link in your project meets all the expected requirements.
+
+## Tested Platforms
+
+`rusty_link` itsself works on all major platforms. I only had trouble with the example with sound on Linux. Could be my fault for not using `cpal` properly?! Any help with that is highly appreciated. 😘
+Anyway, this shouldnt stop anyone from using this library in their project. Have fun!
+
+|                            | MacOS M1 | Win 11 WASAPI | Ubuntu 22 on Pi4   |
+| -------------------------- | -------- | ------------- | ------------------ |
+| Building `rusty_link`      | &check;  | &check;       | &check;            |
+| Example: `link_hut_silent` | &check;  | &check;       | &check;            |
+| Example: `link_hut`        | &check;  | &check;       | cpal/ALSA issues?! |
 
 ## Feedback
 
