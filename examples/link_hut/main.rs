@@ -22,14 +22,6 @@ mod audio_engine;
 mod audio_platform_cpal;
 mod input_thread;
 
-#[macro_use]
-extern crate lazy_static;
-// Using AblLink with `lazy_static` in this example, because the `cpal` audio callback requires all variables
-// to be moved into the callback, or to have a 'static lifetime. This is just one possible design solution.
-lazy_static! {
-    static ref ABL_LINK: AblLink = AblLink::new(120.);
-}
-
 fn main() {
     // Init Audio Device and print device info
     let audio_platform = AudioPlatformCpal::new();
@@ -47,41 +39,56 @@ fn main() {
 
     println!("\nenabled | num peers | quantum | start stop sync | tempo   | beats    | metro");
 
-    // Init Multithread State
+    // Init Multithread Variables
+    let abl_link = Arc::new(AblLink::new(120.));
+    let abl_link_clone_input_thread = Arc::clone(&abl_link);
+    let abl_link_clone_audio_thread = Arc::clone(&abl_link);
+
     let running = Arc::new(AtomicBool::new(true));
-    let running_clone1 = Arc::clone(&running);
+    let running_clone_input_thread = Arc::clone(&running);
 
     let quantum = Arc::new(Mutex::new(4.));
-    let quantum_clone1 = Arc::clone(&quantum);
-    let quantum_clone2 = Arc::clone(&quantum);
+    let quantum_clone_input_thread = Arc::clone(&quantum);
+    let quantum_clone_audio_thread = Arc::clone(&quantum);
 
     // Init Terminal Input Thread
     let (input_tx, input_rx) = mpsc::channel::<UpdateSessionState>();
     let input_thread = thread::spawn(move || {
-        input_thread::poll_input(input_tx, running_clone1, &ABL_LINK, quantum_clone1);
+        input_thread::poll_input(
+            input_tx,
+            running_clone_input_thread,
+            abl_link_clone_input_thread,
+            quantum_clone_input_thread,
+        );
     });
 
     // Init Audio Engine
-    let _audio_engine = AudioEngine::new(&ABL_LINK, audio_platform, input_rx, quantum_clone2);
+    let mut audio_engine = AudioEngine::new(
+        abl_link_clone_audio_thread,
+        audio_platform,
+        input_rx,
+        quantum_clone_audio_thread,
+    );
 
     // Crossterm UI Loop
     let mut app_session_state = SessionState::new();
     '_UI_loop: while running.load(Ordering::Acquire) {
-        ABL_LINK.capture_app_session_state(&mut app_session_state);
+        abl_link.capture_app_session_state(&mut app_session_state);
         print_state(
-            ABL_LINK.clock_micros(),
+            abl_link.clock_micros(),
             &app_session_state,
-            ABL_LINK.is_enabled(),
-            ABL_LINK.num_peers(),
+            abl_link.is_enabled(),
+            abl_link.num_peers(),
             *quantum.lock().unwrap(),
-            ABL_LINK.is_start_stop_sync_enabled(),
+            abl_link.is_start_stop_sync_enabled(),
         );
         std::thread::sleep(Duration::from_millis(16)); // Frame Time 16ms = ~60fps
     }
 
     // Quit App
+    abl_link.enable(false);
+    audio_engine.stream = None;
     input_thread.join().unwrap();
-    ABL_LINK.enable(false);
 }
 
 /// Prints SessionState and AblLink Data to the terminal.

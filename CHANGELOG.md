@@ -16,6 +16,10 @@
 
 - Bugfixes in Linux compilation problems of examples
 
+# 0.3.4
+
+- Removed need for `lazy_static` in link_hut example
+
 ---
 
 _Disclaimer: Minor fixes and tweaks are not mentioned in the change log and are part of every new release._
