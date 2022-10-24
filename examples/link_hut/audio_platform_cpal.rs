@@ -108,7 +108,7 @@ impl AudioPlatformCpal {
         let sample_time = Duration::from_secs(1).div_f64(self.config.sample_rate.0 as f64);
 
         let audio_callback = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
-            // Output latency in micros (as predicted by cpal)
+            // Output latency (as predicted by cpal)
             let output_latency = info
                 .timestamp()
                 .playback
