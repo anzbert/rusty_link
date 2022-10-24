@@ -12,6 +12,10 @@
 
 - Increased callback safety with 'static lifetime + Send requirement
 
+# 0.3.3
+
+- Bugfixes in Linux compilation problems of examples
+
 ---
 
 _Disclaimer: Minor fixes and tweaks are not mentioned in the change log and are part of every new release._

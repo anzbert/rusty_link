@@ -3,7 +3,7 @@
 
 # rusty_link
 
-rusty_link is a Rust wrapper of [abl_link](https://github.com/Ableton/link/tree/master/extensions/abl_link),
+`rusty_link` is a Rust wrapper of [abl_link](https://github.com/Ableton/link/tree/master/extensions/abl_link),
 which is a C 11 extension for Ableton Link, provided by Ableton.
 This library attempts to be mostly unopinionated and plain in
 copying the functionality of abl_link, while providing some of Rust's safety guarantees.
@@ -40,13 +40,11 @@ See the [cpal documentation](https://github.com/RustAudio/cpal) for ASIO and Jac
 
 ## Platforms
 
-Tested platforms so far:
-
-|                            | MacOS   | Windows | Linux            |
-| -------------------------- | ------- | ------- | ---------------- |
-| Building: `cargo build`    | &check; | &check; | &check;          |
-| Example: `link_hut_silent` | &check; | &check; | Linking Errors?! |
-| Example: `link_hut`        | &check; | &check; | Linking Errors?! |
+|                            | MacOS   | Windows | Linux                     |
+| -------------------------- | ------- | ------- | ------------------------- |
+| Building `rusty_link`      | &check; | &check; | &check;                   |
+| Example: `link_hut_silent` | &check; | &check; | &check;                   |
+| Example: `link_hut`        | &check; | &check; | ALSA issue with cpal ???! |
 
 Help with unsuccessful tests is highly appreciated! 😘
 
@@ -54,7 +52,7 @@ Help with unsuccessful tests is highly appreciated! 😘
 
 Requires a recent version of CMake (3.14 or newer) to be installed and available in your terminal. Test with `cmake --version`.
 
-Linux may require a few more system libraries to be installed for C compilation depending on your distro, eg `build-essential` `libasound2-dev` `pkg-config`, etc...
+Linux _may_ require a few more system libraries to be installed for C compilation, depending on your distro, like `build-essential`, `libclang-dev` or `libasound2-dev` and `pkg-config` for examples, etc...
 
 ## Thread and Realtime Safety
 
@@ -66,7 +64,7 @@ Linux may require a few more system libraries to be installed for C compilation 
 
 ## Implementation
 
-- rusty_link currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available as methods on either the `AblLink` or the `SessionState` struct, except for the destructors, which are implemented on the Drop trait.struct.
+- `rusty_link` currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available as methods on either the `AblLink` or the `SessionState` struct, except for the destructors, which are implemented on the Drop trait.struct.
 - An instance of AblLink can be thought of as an Object with internal mutability. Thread safety is guaranteed in all functions, except for the capture/commit of Session States, with internal Mutexes on the C++ side. Check the function doc comments and official Link documentation for more.
 - Includes a Rust port of the C++ [HostTimeFilter](https://github.com/Ableton/link/blob/master/include/ableton/link/HostTimeFilter.hpp), which can be used in the audio callback to align the host clock with the sample clock.
 - Delete functions have been added to delete previously set `num_peers`, `start_stop` and `tempo` callbacks.
@@ -77,13 +75,13 @@ Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-
 
 ## Feedback
 
-I am not a professional Developer in C++ or Rust, so any help with updates and corrections of my work are welcome.
+I am not a professional Developer, just doing this as a hobby, so any help with updates and corrections of my work are welcome.
 
 ## License
 
 Ableton Link is dual licensed under GPLv2+ and a proprietary [license](https://github.com/Ableton/link/blob/master/LICENSE.md).
 
-This means that rusty_link has to be under the GPLv2+ as well.
+This means that `rusty_link` has to be under the GPLv2+ as well.
 
 If you would like to incorporate Link into a proprietary software application, please contact Ableton at <link-devs@ableton.com>.
 

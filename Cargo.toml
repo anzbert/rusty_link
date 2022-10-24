@@ -1,6 +1,6 @@
 [package]
 name = "rusty_link"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Andreas Mueller <anzbert@gmail.com>"]
 edition = "2021"
 description = "Rust bindings for Ableton Link's C Wrapper Extension (abl_link)"
@@ -16,7 +16,9 @@ categories = ["api-bindings"]
 [dev-dependencies]
 lazy_static = "^1.4.0"
 crossterm = "^0.25.0"
-cpal = "0.14.*"        # See the cpal documentation for ASIO and Jack features
+cpal = "0.14.*"
+# cpal = { version = "0.14.*", features = ["jack"] }
+# cpal = { version = "0.14.*", features = ["asio"] }
 
 [build-dependencies]
 cmake = "^0.1.48"
