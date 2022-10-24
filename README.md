@@ -48,7 +48,7 @@ Linux _may_ require a few more system libraries to be installed for C compilatio
 
 ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) has doc comments about thread and realtime safety on some of its functions. Those comments have been copied to the functions of this library. A short explainer on what they mean:
 
-- [Thread Safety](https://en.wikipedia.org/wiki/Thread_safety): Thread-safe code only manipulates shared data structures in a manner that ensures that all threads behave properly and fulfill their design specifications without unintended interaction.
+- [Thread Safety](https://en.wikipedia.org/wiki/Thread_safety): Thread-safe code only manipulates shared data structures in a manner that ensures that all threads behave properly and fulfil their design specifications without unintended interaction.
 
 - Realtime Safety: These functions can be called in a Realtime environment without blocking the thread. For example, the audio thread/callback.
 
@@ -65,8 +65,8 @@ Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-
 
 ## Tested Platforms
 
-`rusty_link` itsself works on all major platforms. I only had trouble with the example with sound on Linux. Could be my fault for not using `cpal` properly?! Any help with that is highly appreciated. 😘
-Anyway, this shouldnt stop anyone from using this library in their project. Have fun!
+`rusty_link` itself works on all major platforms. I only had trouble with the example with sound on Linux. Could be my fault for not using `cpal` properly?! Any help with that is highly appreciated. 😘
+Anyway, this shouldn't stop anyone from using this library in their project. Have fun!
 
 |                            | MacOS M1 | Win 11 WASAPI | Ubuntu 22 on Pi4   |
 | -------------------------- | -------- | ------------- | ------------------ |
