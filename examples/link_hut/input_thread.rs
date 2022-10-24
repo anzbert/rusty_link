@@ -21,7 +21,7 @@ pub enum UpdateSessionState {
 pub fn poll_input(
     tx: mpsc::Sender<UpdateSessionState>,
     running: Arc<AtomicBool>,
-    link: &AblLink,
+    link: Arc<AblLink>,
     quantum: Arc<Mutex<f64>>,
 ) {
     terminal::enable_raw_mode().unwrap();

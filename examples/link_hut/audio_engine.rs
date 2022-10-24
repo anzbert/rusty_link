@@ -14,12 +14,12 @@ const CLICK_DURATION: u64 = 100; // In Milliseconds
 
 /// Handles the SessionState in the Audio thread and the Metronome Sound Synth.
 pub struct AudioEngine {
-    pub stream: Stream,
+    pub stream: Option<Stream>,
 }
 
 impl AudioEngine {
     pub fn new(
-        link: &'static AblLink,
+        link: Arc<AblLink>,
         audio_cpal: AudioPlatformCpal,
         input: Receiver<UpdateSessionState>,
         quantum: Arc<Mutex<f64>>,
@@ -151,6 +151,8 @@ impl AudioEngine {
         // Build audio stream and start playback
         let stream = audio_cpal.build_stream::<f32>(engine_callback);
 
-        Self { stream }
+        Self {
+            stream: Some(stream),
+        }
     }
 }
