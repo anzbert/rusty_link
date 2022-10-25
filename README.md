@@ -54,7 +54,7 @@ Linux _may_ require a few more system libraries to be installed for C compilatio
 
 ## Implementation
 
-- `rusty_link` currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available as methods on either the `AblLink` or the `SessionState` struct, except for the destructors, which are implemented on the Drop trait.struct.
+- `rusty_link` currently wraps around all functions available in ['abl_link.h'](https://github.com/Ableton/link/blob/master/extensions/abl_link/include/abl_link.h) and makes them publicly available as methods on either the `AblLink` or the `SessionState` struct, except for the destructors, which are implemented on the Drop trait.
 - An instance of AblLink can be thought of as an Object with internal mutability. Thread safety is guaranteed in all functions, except for the capture/commit of Session States, with internal Mutexes on the C++ side. Check the function doc comments and official Link documentation for more.
 - Includes a Rust port of the C++ [HostTimeFilter](https://github.com/Ableton/link/blob/master/include/ableton/link/HostTimeFilter.hpp), which can be used in the audio callback to align the host clock with the sample clock.
 - Delete functions have been added to delete previously set `num_peers`, `start_stop` and `tempo` callbacks.

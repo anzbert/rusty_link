@@ -10,14 +10,14 @@ license = "GPL-2.0-or-later"
 keywords = ["ableton", "link"]
 categories = ["api-bindings"]
 
-
 [dependencies]
+# None
 
 [dev-dependencies]
 crossterm = "^0.25.0"
-cpal = "0.14.*"
-# cpal = { version = "0.14.*", features = ["asio"] }
-# cpal = { version = "0.14.*", features = ["jack"] }
+cpal = "~0.14.1"
+# cpal = { version = "~0.14.1", features = ["asio"] }
+# cpal = { version = "~0.14.1", features = ["jack"] }
 
 [build-dependencies]
 cmake = "^0.1.48"
