@@ -27,6 +27,12 @@ impl Drop for SessionState {
     }
 }
 
+impl Default for SessionState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SessionState {
     /// Create a new SessionState instance.
     ///

@@ -1,6 +1,8 @@
 // This example is a Rust port of 'link_hut' from the 'abl_link' extension (written in C).
 // Source: https://github.com/Ableton/link/blob/master/extensions/abl_link/examples/link_hut/main.c
 
+#![allow(clippy::new_without_default)]
+
 use crossterm::{
     cursor,
     event::{poll, read, Event, KeyCode},
@@ -82,7 +84,7 @@ fn print_state(state: &mut State) {
         Print(format!("{:<3}   {:<9} | ", start_stop, playing)),
         Print(format!("{:<7.2} | ", tempo)),
         Print(format!("{:<8.2} | ", beats)),
-        Print(format!("{}", metro)),
+        Print(metro.to_string()),
         cursor::RestorePosition,
     )
     .unwrap();

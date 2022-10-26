@@ -20,6 +20,10 @@
 
 - Removed need for `lazy_static` in link_hut example
 
+# 0.3.5
+
+- Implement suggestions from clippy ;)
+
 ---
 
 _Disclaimer: Minor fixes and tweaks are not mentioned in the change log and are part of every new release._

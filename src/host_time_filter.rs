@@ -9,6 +9,12 @@ pub struct HostTimeFilter {
     index: usize,
 }
 
+impl Default for HostTimeFilter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HostTimeFilter {
     pub fn new() -> Self {
         let max_buffer_size: usize = 512; // Default

@@ -136,7 +136,7 @@ fn print_state(
         Print(format!("{:<3}   {:<9} | ", start_stop, playing)),
         Print(format!("{:<7.2} | ", tempo)),
         Print(format!("{:<8.2} | ", beats)),
-        Print(format!("{}", metro)),
+        Print(metro.to_string()),
         cursor::RestorePosition,
     )
     .unwrap();

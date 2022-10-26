@@ -107,7 +107,7 @@ impl AudioPlatformCpal {
         // Time per sample at the current sample rate
         let sample_time = Duration::from_secs(1).div_f64(self.config.sample_rate.0 as f64);
 
-        let audio_callback = move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
+        move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
             // Output latency (as predicted by cpal)
             let output_latency = info
                 .timestamp()
@@ -137,8 +137,6 @@ impl AudioPlatformCpal {
 
             // Increase sample counter clock
             sample_count += buffer_size as u64;
-        };
-
-        audio_callback
+        }
     }
 }
