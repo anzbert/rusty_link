@@ -1,28 +1,32 @@
-# 0.3.0
+# 0.3.6
 
-- Started a Changelog
-- Added first version of Rust Ports of Examples
+- Updated Link dependency to latest version (3.0.6)
+
+# 0.3.5
+
+- Implement suggestions from clippy ;)
+
+# 0.3.4
+
+- Removed need for `lazy_static` in link_hut example
+
+# 0.3.3
+
+- Bugfixes in Linux compilation problems of examples
+
+# 0.3.2
+
+- Increased callback safety with 'static lifetime + Send requirement
 
 # 0.3.1
 
 - Added HostTimeFilter
 - Bugfixes in Link Hut example with sound
 
-# 0.3.2
+# 0.3.0
 
-- Increased callback safety with 'static lifetime + Send requirement
-
-# 0.3.3
-
-- Bugfixes in Linux compilation problems of examples
-
-# 0.3.4
-
-- Removed need for `lazy_static` in link_hut example
-
-# 0.3.5
-
-- Implement suggestions from clippy ;)
+- Started a Changelog
+- Added first version of Rust Ports of Examples
 
 ---
 
