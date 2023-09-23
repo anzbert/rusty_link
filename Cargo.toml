@@ -1,6 +1,6 @@
 [package]
 name = "rusty_link"
-version = "0.3.6"
+version = "0.4.0"
 authors = ["Andreas Mueller <anzbert@gmail.com>"]
 edition = "2021"
 description = "Rust bindings for Ableton Link's C Wrapper Extension (abl_link)"
@@ -14,11 +14,11 @@ categories = ["api-bindings"]
 # None
 
 [dev-dependencies]
-crossterm = "^0.25.0"
-cpal = "~0.14.2"
-# cpal = { version = "~0.14.2", features = ["asio"] }
-# cpal = { version = "~0.14.2", features = ["jack"] }
+crossterm = "^0.27.0"
+cpal = "~0.15.2"
+# cpal = { version = "~0.15.2", features = ["asio"] }
+# cpal = { version = "~0.15.2", features = ["jack"] }
 
 [build-dependencies]
 cmake = "^0.1.49"
-bindgen = "^0.63.0"
+bindgen = "^0.68.1"

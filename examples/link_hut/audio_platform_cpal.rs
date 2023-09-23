@@ -1,5 +1,7 @@
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{BufferSize, Device, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig};
+use cpal::{
+    BufferSize, Device, FromSample, OutputCallbackInfo, Sample, SampleFormat, SupportedStreamConfig,
+};
 use cpal::{Stream, StreamConfig};
 use std::time::Duration;
 
@@ -75,15 +77,19 @@ impl AudioPlatformCpal {
         let err_fn = |err| eprintln!("An error occurred on the output audio stream: {}", err);
 
         let stream = match self.supported_config.sample_format() {
-            SampleFormat::F32 => self
-                .device
-                .build_output_stream(&self.config, callback, err_fn),
-            SampleFormat::I16 => self
-                .device
-                .build_output_stream(&self.config, callback, err_fn),
-            SampleFormat::U16 => self
-                .device
-                .build_output_stream(&self.config, callback, err_fn),
+            SampleFormat::F32 => {
+                self.device
+                    .build_output_stream(&self.config, callback, err_fn, None)
+            }
+            SampleFormat::I16 => {
+                self.device
+                    .build_output_stream(&self.config, callback, err_fn, None)
+            }
+            SampleFormat::U16 => {
+                self.device
+                    .build_output_stream(&self.config, callback, err_fn, None)
+            }
+            sample_format => panic!("Unsupported sample format '{sample_format}'"),
         }
         .unwrap();
 
@@ -93,7 +99,7 @@ impl AudioPlatformCpal {
     }
 
     /// Build an audio callback that can be used with cpal's [build_output_stream]
-    fn build_cpal_callback<T: Sample>(
+    fn build_cpal_callback<T: Sample + FromSample<f32>>(
         &self,
         mut engine_callback: (impl FnMut(usize, u64, Duration, Duration, u64) -> Vec<f32>
              + Send
@@ -131,7 +137,11 @@ impl AudioPlatformCpal {
             // Send buffer with same sound output to all channels (equals mono)
             for s in 0..data.len() / config_clone.channels as usize {
                 for c in 0..config_clone.channels as usize {
-                    data[s * config_clone.channels as usize + c] = Sample::from(&buffer[s]);
+                    // - Silence:
+                    // data[s * config_clone.channels as usize + c] = Sample::EQUILIBRIUM;
+
+                    // - Metronome:
+                    data[s * config_clone.channels as usize + c] = T::from_sample(buffer[s]);
                 }
             }
 

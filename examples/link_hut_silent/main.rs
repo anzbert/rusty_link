@@ -93,7 +93,7 @@ fn print_state(state: &mut State) {
 
 /// Poll keyboard input (Blocking function -> Thread "sleeps" here for `duration`)
 /// Use a separate input thread for non-blocking input. (See `link_hut` example)
-fn poll_input(state: &mut State, duration: Duration) -> crossterm::Result<()> {
+fn poll_input(state: &mut State, duration: Duration) -> io::Result<()> {
     if poll(duration)? {
         if let Event::Key(event) = read()? {
             state.capture_app_state();
