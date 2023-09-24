@@ -1,4 +1,4 @@
-# 0.4.0
+# 0.4.1
 
 - Updated Ableton Link to latest release (3.1.0)
 - Updated all dependencies and fixed resulting errors in examples

@@ -3,8 +3,7 @@
 
 # rusty_link
 
-`rusty_link` is a Rust wrapper of [abl_link](https://github.com/Ableton/link/tree/master/extensions/abl_link),
-which is a C 11 extension for Ableton Link, provided by Ableton.
+`rusty_link` is a Rust wrapper for Ableton Link through the official C 11 wrapper extension, [abl_link](https://github.com/Ableton/link/tree/master/extensions/abl_link).
 This library attempts to be mostly unopinionated and plain in
 copying the functionality of abl_link, while providing some of Rust's safety guarantees.
 
@@ -65,7 +64,7 @@ Ableton designed a [Test Plan](https://github.com/Ableton/link/blob/master/TEST-
 
 ## Tested Platforms
 
-`rusty_link` itself works on all major platforms. I only had trouble with the example with sound on Linux. Could be my fault for not using `cpal` properly?! Any help with that is highly appreciated. 😘
+`rusty_link` itself works on all major platforms. I only had trouble with the example with sound on Linux. Could be my fault for not using `cpal` properly?! Any help with that is appreciated 😘.
 Anyway, this shouldn't stop anyone from using this library in their project. Have fun!
 
 |                            | MacOS M1 | Win 11 WASAPI | Ubuntu 22 on Pi4   |
@@ -73,6 +72,10 @@ Anyway, this shouldn't stop anyone from using this library in their project. Hav
 | Building `rusty_link`      | &check;  | &check;       | &check;            |
 | Example: `link_hut_silent` | &check;  | &check;       | &check;            |
 | Example: `link_hut`        | &check;  | &check;       | cpal/ALSA issues?! |
+
+## Changelog
+
+Release notes can be seen on the project GitHub page [here](https://github.com/anzbert/rusty_link/blob/master/CHANGELOG.md).
 
 ## Feedback
 
@@ -89,11 +92,7 @@ If you would like to incorporate Link into a proprietary software application, p
 ## Credits
 
 Thanks to Magnus Herold for [his implementation](https://crates.io/crates/ableton-link).
-I made this library to learn about FFI in Rust and I started it as a fork of his.
+I made this library to learn about FFI in Rust and I started it as a fork of his, but then pivotted to using the offical C wrapper by Ableton.
 
 Some code for splitting closures has been borrowed from [ffi_helpers](https://crates.io/crates/ffi_helpers) with altered functionality. Thanks to Michael F Bryan for his work.
 [Pull request](https://github.com/Michael-F-Bryan/ffi_helpers/pull/8) to ffi_helpers pending...
-
-## Links
-
-For anyone interested, I also started making a multi-platform Ableton Link wrapper for Flutter, called [f_link](https://pub.dev/packages/f_link).
