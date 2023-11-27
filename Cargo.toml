@@ -21,4 +21,4 @@ cpal = "~0.15.2"
 
 [build-dependencies]
 cmake = "^0.1.49"
-bindgen = "^0.68.1"
+bindgen = "^0.69.1"
