@@ -1,6 +1,10 @@
 [![Crate](https://img.shields.io/crates/v/rusty_link.svg)](https://crates.io/crates/rusty_link)
 [![API](https://docs.rs/rusty_link/badge.svg)](https://docs.rs/rusty_link)
 
+
+<a href='https://ko-fi.com/S6S8SP865' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi4.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
+
 # rusty_link
 
 `rusty_link` is a Rust wrapper for Ableton Link through the official C 11 wrapper extension, [abl_link](https://github.com/Ableton/link/tree/master/extensions/abl_link).
