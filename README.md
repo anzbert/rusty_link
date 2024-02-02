@@ -1,9 +1,7 @@
 [![Crate](https://img.shields.io/crates/v/rusty_link.svg)](https://crates.io/crates/rusty_link)
 [![API](https://docs.rs/rusty_link/badge.svg)](https://docs.rs/rusty_link)
 
-
 <a href='https://ko-fi.com/S6S8SP865' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi4.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
-
 
 # rusty_link
 
@@ -18,6 +16,10 @@ network discover each other automatically and form a musical session
 in which each participant can perform independently: anyone can start
 or stop while still staying in time. Anyone can change the tempo, the
 others will follow. Anyone can join or leave without disrupting the session.
+
+## Changelog
+
+Release notes can be seen on the project GitHub page [here](https://github.com/anzbert/rusty_link/blob/master/CHANGELOG.md).
 
 ## Examples
 
@@ -76,10 +78,6 @@ Anyway, this shouldn't stop anyone from using this library in their project. Hav
 | Building `rusty_link`      | &check;  | &check;       | &check;            |
 | Example: `link_hut_silent` | &check;  | &check;       | &check;            |
 | Example: `link_hut`        | &check;  | &check;       | cpal/ALSA issues?! |
-
-## Changelog
-
-Release notes can be seen on the project GitHub page [here](https://github.com/anzbert/rusty_link/blob/master/CHANGELOG.md).
 
 ## Feedback
 
