@@ -15,10 +15,10 @@ categories = ["api-bindings"]
 
 [dev-dependencies]
 crossterm = "^0.27.0"
-cpal = "~0.15.2"
+cpal = "~0.15.3"
 # cpal = { version = "~0.15.2", features = ["asio"] }
 # cpal = { version = "~0.15.2", features = ["jack"] }
 
 [build-dependencies]
 cmake = "^0.1.50"
-bindgen = "^0.69.2"
+bindgen = "^0.69.4"
