@@ -153,7 +153,7 @@ fn poll_input(state: &mut State, duration: Duration) -> io::Result<()> {
 }
 
 fn main() {
-    println!("\n\n < L I N K  H U T >\n");
+    println!("\n\n < L I N K  H U T  S I L E N T >\n");
 
     println!("usage:");
     println!("  enable / disable Link: a");
