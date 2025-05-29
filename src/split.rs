@@ -106,9 +106,10 @@ macro_rules! impl_split {
                 {
                     debug_assert!(!ptr.is_null());
 
-                    let callback: &mut T = &mut *(ptr as *mut T);
-
-                    callback($($inner),*)
+                    unsafe {
+                        let callback: &mut T = &mut *(ptr as *mut T);
+                        callback($($inner),*)
+                    }
                 }
 
                 trampoline::<Func, Ret, $($outer,)*>
@@ -121,9 +122,10 @@ macro_rules! impl_split {
                 {
                     debug_assert!(!ptr.is_null());
 
-                    let callback: &mut T = &mut *(ptr as *mut T);
-
-                    callback($($inner),*)
+                    unsafe {
+                        let callback: &mut T = &mut *(ptr as *mut T);
+                        callback($($inner),*)
+                    }
                 }
 
                 trampoline::<Func, Ret, $($outer,)*>

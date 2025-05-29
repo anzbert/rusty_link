@@ -1,3 +1,9 @@
+# 0.4.5
+
+- Updated to use latest Ableton Link [release version 3.1.3](https://github.com/Ableton/link/releases/tag/Link-3.1.3)
+- Now using latest Rust edition 2024
+- Updated all rust dependencies to latest versions
+
 # 0.4.4
 
 - Updated all dependencies to latest versions

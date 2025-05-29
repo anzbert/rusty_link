@@ -1,8 +1,8 @@
 [package]
 name = "rusty_link"
-version = "0.4.4"
+version = "0.4.5"
 authors = ["Andreas Mueller <anzbert@gmail.com>"]
-edition = "2021"
+edition = "2024"
 description = "Rust bindings for Ableton Link through the official C Wrapper (abl_link)"
 repository = "https://github.com/anzbert/rusty_link"
 readme = "README.md"
@@ -15,11 +15,11 @@ categories = ["api-bindings"]
 
 [dev-dependencies]
 # These dev-dependencies are only used by the /examples.
-crossterm = "^0.28.1"
+crossterm = "^0.29.0"
 cpal = "~0.15.3"
 # cpal = { version = "~0.15.3", features = ["asio"] } 
 # cpal = { version = "~0.15.3", features = ["jack"] }
 
 [build-dependencies]
-cmake = "^0.1.51"
-bindgen = "^0.70.1"
+cmake = "^0.1.54"
+bindgen = "^0.71.1"
