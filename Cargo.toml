@@ -1,6 +1,6 @@
 [package]
 name = "rusty_link"
-version = "0.4.5"
+version = "0.4.6"
 authors = ["Andreas Mueller <anzbert@gmail.com>"]
 edition = "2024"
 description = "Rust bindings for Ableton Link through the official C Wrapper (abl_link)"
