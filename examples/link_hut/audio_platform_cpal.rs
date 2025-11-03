@@ -70,7 +70,7 @@ impl AudioPlatformCpal {
     /// Build an Audio Stream in the correct format with a provided engine callback function
     pub fn build_stream<T: Sample>(
         &self,
-        engine_callback: (impl FnMut(usize, u64, Duration, Duration, u64) -> Vec<f32> + Send + 'static),
+        engine_callback: impl FnMut(usize, u64, Duration, Duration, u64) -> Vec<f32> + Send + 'static,
     ) -> Stream {
         let callback = self.build_cpal_callback::<f32>(engine_callback);
 
@@ -101,9 +101,9 @@ impl AudioPlatformCpal {
     /// Build an audio callback that can be used with cpal's [build_output_stream]
     fn build_cpal_callback<T: Sample + FromSample<f32>>(
         &self,
-        mut engine_callback: (impl FnMut(usize, u64, Duration, Duration, u64) -> Vec<f32>
-             + Send
-             + 'static),
+        mut engine_callback: impl FnMut(usize, u64, Duration, Duration, u64) -> Vec<f32>
+        + Send
+        + 'static,
     ) -> impl FnMut(&mut [T], &OutputCallbackInfo) + Send + 'static {
         let config_clone = self.config.clone();
 
