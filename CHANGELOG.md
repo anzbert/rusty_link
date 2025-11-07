@@ -1,4 +1,4 @@
-# 0.4.4
+# 0.4.6
 
 - Updated to use latest Ableton Link [release version 3.1.4](https://github.com/Ableton/link/releases/tag/Link-3.1.4)
 
