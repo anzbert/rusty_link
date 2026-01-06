@@ -9,8 +9,9 @@ fn main() {
     // Link standard C++ lib
     #[cfg(target_os = "macos")]
     println!("cargo:rustc-link-lib=c++");
-    #[cfg(target_os = "linux")]
-    println!("cargo:rustc-link-lib=stdc++");
+    if std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "linux" {
+        println!("cargo:rustc-link-lib=stdc++");
+    }
 
     // Link finished build into executable from '$OUT_DIR/lib'
     println!("cargo:rustc-link-search=native={}/lib", out_dir.display());
