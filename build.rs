@@ -7,8 +7,10 @@ fn main() {
     let out_dir = cmake::Config::new("cmake").build();
 
     // Link standard C++ lib
-    #[cfg(target_os = "macos")]
-    println!("cargo:rustc-link-lib=c++");
+    // #[cfg(target_os = "macos")] // changed to if statements below to allow crosscompilation to different OS
+    if std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "macos" {
+        println!("cargo:rustc-link-lib=c++");
+    }
     if std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "linux" {
         println!("cargo:rustc-link-lib=stdc++");
     }
