@@ -1,3 +1,9 @@
+# 0.4.7
+
+- Fixed crosscompilation from Linux to Windows. Thanks to [PR from elwerene](https://github.com/anzbert/rusty_link/pull/11)
+- Updated to use latest Ableton Link [release version 3.1.5](https://github.com/Ableton/link/releases/tag/Link-3.1.5)
+- Updated all dependencies to latest versions
+
 # 0.4.6
 
 - Updated to use latest Ableton Link [release version 3.1.4](https://github.com/Ableton/link/releases/tag/Link-3.1.4)

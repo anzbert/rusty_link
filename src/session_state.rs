@@ -133,12 +133,12 @@ impl SessionState {
     ///  a Link session. Much care must be taken at the application layer when implementing
     ///  such a feature so that users do not accidentally disrupt Link sessions that they may
     ///  join.
-    pub fn force_beat_at_time(&mut self, beat: f64, time: u64, quantum: f64) {
+    pub fn force_beat_at_time(&mut self, beat: f64, time: i64, quantum: f64) {
         unsafe { abl_link_force_beat_at_time(self.session_state, beat, time, quantum) }
     }
 
     /// Set if transport should be playing or stopped, taking effect at the given time.
-    pub fn set_is_playing(&mut self, is_playing: bool, time: u64) {
+    pub fn set_is_playing(&mut self, is_playing: bool, time: i64) {
         unsafe { abl_link_set_is_playing(self.session_state, is_playing, time) }
     }
 
@@ -148,7 +148,7 @@ impl SessionState {
     }
 
     /// Get the time at which a transport start/stop occurs
-    pub fn time_for_is_playing(&self) -> u64 {
+    pub fn time_for_is_playing(&self) -> i64 {
         unsafe { abl_link_time_for_is_playing(self.session_state) }
     }
 
@@ -164,7 +164,7 @@ impl SessionState {
     pub fn set_is_playing_and_request_beat_at_time(
         &mut self,
         is_playing: bool,
-        time: u64,
+        time: i64,
         beat: f64,
         quantum: f64,
     ) {

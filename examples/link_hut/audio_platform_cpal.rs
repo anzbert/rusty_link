@@ -37,19 +37,22 @@ impl AudioPlatformCpal {
 
         println!(
             "SAMPLE RATE: {} (SampleFormat::{:?})",
-            config.sample_rate.0,
+            config.sample_rate,
             first_supported_config.sample_format()
         );
 
         println!(
             "DEVICE NAME: {}",
-            device.name().expect("Could not get device name."),
+            device
+                .description()
+                .expect("Could not get device description, including name.")
+                .name(),
         );
 
         println!(
             "BUFFER SIZE: {} samples, {:.2} ms (Supported {:?})",
             BUFFER_SIZE,
-            BUFFER_SIZE as f64 * 1000. / config.sample_rate.0 as f64,
+            BUFFER_SIZE as f64 * 1000. / config.sample_rate as f64,
             first_supported_config.buffer_size()
         );
 
@@ -111,7 +114,7 @@ impl AudioPlatformCpal {
         let mut sample_count: u64 = 0;
 
         // Time per sample at the current sample rate
-        let sample_time = Duration::from_secs(1).div_f64(self.config.sample_rate.0 as f64);
+        let sample_time = Duration::from_secs(1).div_f64(self.config.sample_rate as f64);
 
         move |data: &mut [T], info: &cpal::OutputCallbackInfo| {
             // Output latency (as predicted by cpal)
@@ -128,7 +131,7 @@ impl AudioPlatformCpal {
             // and handles changes in the SessionState
             let buffer: Vec<f32> = engine_callback(
                 buffer_size,
-                config_clone.sample_rate.0 as u64,
+                config_clone.sample_rate as u64,
                 output_latency,
                 sample_time,
                 sample_count,

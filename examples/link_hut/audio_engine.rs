@@ -4,7 +4,7 @@ use rusty_link::{AblLink, HostTimeFilter, SessionState};
 use std::{
     cmp::Ordering,
     f32::consts::TAU,
-    sync::{mpsc::Receiver, Arc, Mutex},
+    sync::{Arc, Mutex, mpsc::Receiver},
     time::Duration,
 };
 
@@ -66,11 +66,11 @@ impl AudioEngine {
                     }
                     UpdateSessionState::TogglePlaying => {
                         if audio_session_state.is_playing() {
-                            audio_session_state.set_is_playing(false, invoke_time as u64);
+                            audio_session_state.set_is_playing(false, invoke_time as i64);
                         } else {
                             audio_session_state.set_is_playing_and_request_beat_at_time(
                                 true,
-                                invoke_time as u64,
+                                invoke_time as i64,
                                 0.,
                                 last_known_quantum,
                             );

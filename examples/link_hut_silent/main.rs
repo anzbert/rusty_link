@@ -5,7 +5,7 @@
 
 use crossterm::{
     cursor,
-    event::{poll, read, Event, KeyCode},
+    event::{Event, KeyCode, poll, read},
     queue,
     style::Print,
     terminal,
@@ -134,11 +134,11 @@ fn poll_input(state: &mut State, duration: Duration) -> io::Result<()> {
                 // Play / Stop Toggle
                 KeyCode::Char(' ') => {
                     if state.session_state.is_playing() {
-                        state.session_state.set_is_playing(false, time_stamp as u64);
+                        state.session_state.set_is_playing(false, time_stamp as i64);
                     } else {
                         state.session_state.set_is_playing_and_request_beat_at_time(
                             true,
-                            time_stamp as u64,
+                            time_stamp as i64,
                             0.,
                             state.quantum,
                         );
