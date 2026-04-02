@@ -1,3 +1,9 @@
+# 0.4.9
+
+- Updated to use latest Ableton Link [release version 4.0.0b3](https://github.com/Ableton/link/releases/tag/Link-4.0.0b3) and added necessary new compile options
+
+- KNOWN ISSUE: Link Audio commands have binds generated now but are not used yet since Link Audio is not yet implemented in this library. Unused command warnings are expected.
+
 # 0.4.8
 
 - Fixed crosscompilation from Linux to Windows. Thanks to [PR from elwerene](https://github.com/anzbert/rusty_link/pull/11)
