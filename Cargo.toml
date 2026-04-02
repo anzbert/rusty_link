@@ -16,10 +16,10 @@ categories = ["api-bindings"]
 [dev-dependencies]
 # These dev-dependencies are only used by the /examples.
 crossterm = "^0.29.0"
-cpal = "0.17.1"
-# cpal = { version = "0.17.1", features = ["asio"] } 
-# cpal = { version = "0.17.1", features = ["jack"] }
+cpal = "0.17.3"
+# cpal = { version = "0.17.3", features = ["asio"] } 
+# cpal = { version = "0.17.3", features = ["jack"] }
 
 [build-dependencies]
-cmake = "^0.1.57"
+cmake = "^0.1.58"
 bindgen = "^0.72.1"
