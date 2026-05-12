@@ -17,10 +17,12 @@ mod rust_bindings {
 
 mod abl_link;
 mod host_time_filter;
+mod link_audio;
 mod session_state;
 mod split;
 
 // PUBLIC API
 pub use abl_link::AblLink;
 pub use host_time_filter::HostTimeFilter;
+pub use link_audio::LinkAudio;
 pub use session_state::SessionState;
